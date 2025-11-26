@@ -77,7 +77,7 @@ class ProductCharacteristic(WBBaseModel):
 
     id: int
     name: str
-    value: list[str] = []
+    value: Any
 
 
 class ProductCard(WBBaseModel):

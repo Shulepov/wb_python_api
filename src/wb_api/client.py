@@ -5,6 +5,9 @@ import httpx
 
 from .api.common import CommonAPI
 from .api.content import ContentAPI
+from .api.finance import FinanceAPI
+from .api.prices import PricesAPI
+from .api.statistics import StatisticsAPI
 from .auth import TokenDecoder, TokenInfo
 from .config import WBConfig
 from .constants import DEFAULT_RATE_LIMITS
@@ -64,6 +67,27 @@ class WildberriesClient:
             self._client,
             self._token,
             self._rate_limiters.get("content", RateLimiter(100, 5)),
+            self._sandbox,
+        )
+
+        self.prices = PricesAPI(
+            self._client,
+            self._token,
+            self._rate_limiters.get("prices", RateLimiter(100, 5)),
+            self._sandbox,
+        )
+
+        self.finance = FinanceAPI(
+            self._client,
+            self._token,
+            self._rate_limiters.get("finance", RateLimiter(1, 1)),
+            self._sandbox,
+        )
+
+        self.statistics = StatisticsAPI(
+            self._client,
+            self._token,
+            self._rate_limiters.get("statistics", RateLimiter(1, 1)),
             self._sandbox,
         )
 

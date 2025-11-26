@@ -82,3 +82,30 @@ class WBConnectionError(WBAPIError):
     """Connection error."""
 
     pass
+
+
+class WBTaskTimeoutError(WBAPIError):
+    """Task execution timeout error."""
+
+    def __init__(self, task_id: str, timeout: float):
+        self.task_id = task_id
+        self.timeout = timeout
+        super().__init__(f"Task {task_id} timeout after {timeout:.1f}s")
+
+
+class WBTaskFailedError(WBAPIError):
+    """Task execution failed error."""
+
+    def __init__(
+        self,
+        task_id: str,
+        status: str,
+        errors: list[dict[str, Any]] | None = None,
+    ):
+        self.task_id = task_id
+        self.task_status = status
+        self.task_errors = errors or []
+        error_msg = f"Task {task_id} failed with status {status}"
+        if errors:
+            error_msg += f": {len(errors)} error(s)"
+        super().__init__(error_msg, response={"errors": errors} if errors else None)

@@ -173,6 +173,145 @@ tariffs = client.common.get_tariffs()
 commission = client.common.get_tariffs_commission()
 ```
 
+### Prices API - Работа с ценами и скидками
+
+```python
+from wb_api.models.prices import Price, SizePrice, ClubDiscount
+
+# Загрузка цен и скидок
+prices = [
+    Price(nm_id=123456, price=1500, discount=20),  # 20% скидка
+    Price(nm_id=123457, price=2000, discount=15),  # 15% скидка
+]
+response = client.prices.upload_prices(prices)
+print(f"Task ID: {response.task_id}")
+
+# Ожидание завершения загрузки
+result = client.prices.wait_for_task(response.task_id, timeout=60)
+print(f"Processed: {result.processed_items}/{result.total_items}")
+
+# Ожидание с отслеживанием прогресса
+def show_progress(task):
+    print(f"Progress: {task.progress_percent:.1f}%")
+
+result = client.prices.wait_for_task(
+    response.task_id,
+    on_progress=show_progress,
+    interval=3
+)
+
+# Загрузка цен для конкретных размеров
+size_prices = [
+    SizePrice(size_id=789012, price=1200),
+]
+client.prices.upload_size_prices(size_prices)
+
+# Загрузка скидок WB Клуба (0-50%)
+club_discounts = [
+    ClubDiscount(nm_id=123456, club_discount=10),
+]
+client.prices.upload_club_discounts(club_discounts)
+
+# Получение товаров с ценами
+goods = client.prices.get_goods_with_prices(limit=100)
+for good in goods:
+    print(f"{good.vendor_code}: {good.price}₽ (-{good.discount}%)")
+
+# Получение по артикулам
+goods = client.prices.get_goods_by_vendor_codes(["ART-001", "ART-002"])
+
+# Получение цен для всех размеров товара
+sizes = client.prices.get_size_prices(nm_id=123456)
+for size in sizes:
+    print(f"Size {size.tech_size}: {size.price}₽")
+
+# Итератор по всем товарам с ценами
+for good in client.prices.iter_goods_with_prices(batch_size=500):
+    print(f"{good.nm_id}: {good.price}₽")
+
+# Проверка товаров в карантине
+quarantine = client.prices.get_quarantine_goods()
+for good in quarantine:
+    print(f"{good.vendor_code}: {good.reason}")
+
+# Мониторинг задач
+processed_tasks = client.prices.get_processed_tasks(limit=10)
+pending_tasks = client.prices.get_pending_tasks()
+```
+
+### Finance API - Баланс продавца
+
+```python
+# Получить баланс
+balance = client.finance.get_balance()
+print(f"Валюта: {balance.currency}")
+print(f"На счёте: {balance.current}₽")
+print(f"Доступно к выводу: {balance.for_withdraw}₽")
+print(f"Заблокировано: {balance.blocked}₽ ({balance.blocked_percent:.1f}%)")
+```
+
+**⚠️ Важно**: Rate Limit - **1 запрос в минуту**!
+
+### Statistics API - Отчёты о продажах
+
+```python
+from datetime import datetime, timedelta
+
+# Отчёт за последние 30 дней
+date_to = datetime.now()
+date_from = date_to - timedelta(days=30)
+
+# Получить детальный отчёт
+report = client.statistics.get_sales_report(
+    date_from=date_from,
+    date_to=date_to,
+    period="daily"
+)
+
+# Анализ отчёта
+for item in report:
+    print(f"NM ID: {item.nm_id}")
+    print(f"Товар: {item.subject_name}")
+    print(f"Количество: {item.quantity}")
+    print(f"Выручка: {item.retail_amount}₽")
+    print(f"К оплате продавцу: {item.total_to_seller}₽")
+    print(f"Комиссия WB: {item.ppvz_sales_commission}₽")
+    print(f"Маржа: {item.margin}₽")
+    print(f"Чистая прибыль: {item.net_profit}₽")
+    print()
+
+# Итератор по всему отчёту (автоматическая пагинация)
+total_to_seller = 0
+for item in client.statistics.iter_sales_report(date_from, date_to):
+    total_to_seller += item.total_to_seller
+
+print(f"Итого к оплате за период: {total_to_seller}₽")
+
+# Получить сводку
+summary = client.statistics.get_sales_summary(
+    date_from=date_from,
+    date_to=date_to
+)
+print(f"\n=== Сводка за период ===")
+print(f"Всего позиций: {summary.total_items}")
+print(f"Продано единиц: {summary.quantity_sold}")
+print(f"Выручка: {summary.revenue}₽")
+print(f"К оплате продавцу: {summary.to_seller}₽")
+print(f"Комиссия WB: {summary.commission}₽ ({summary.commission_percent:.1f}%)")
+print(f"Логистика: {summary.delivery_cost}₽")
+print(f"Эквайринг: {summary.acquiring_fee}₽")
+print(f"Штрафы: {summary.penalty}₽")
+print(f"Хранение: {summary.storage_fee}₽")
+print(f"Чистыми: {summary.net_to_seller}₽")
+print(f"Средний чек: {summary.average_order_value:.2f}₽")
+```
+
+**⚠️ Важно**:
+- Rate Limit - **1 запрос в минуту**!
+- Данные доступны с 29 января 2024
+- До 100,000 строк за запрос
+- 50+ полей в каждой строке отчёта
+
 ## Обработка ошибок
 
 ```python
@@ -180,7 +319,9 @@ from wb_api import (
     WBAPIError,
     WBAuthError,
     WBRateLimitError,
-    WBValidationError
+    WBValidationError,
+    WBTaskTimeoutError,
+    WBTaskFailedError,
 )
 
 try:
@@ -193,6 +334,16 @@ except WBValidationError as e:
     print(f"Validation error: {e}")
 except WBAPIError as e:
     print(f"API error: {e.status_code} - {e.message}")
+
+# Обработка ошибок при работе с задачами
+try:
+    response = client.prices.upload_prices(prices)
+    result = client.prices.wait_for_task(response.task_id, timeout=60)
+except WBTaskTimeoutError as e:
+    print(f"Task {e.task_id} timeout after {e.timeout}s")
+except WBTaskFailedError as e:
+    print(f"Task {e.task_id} failed: {e.task_status}")
+    print(f"Errors: {e.task_errors}")
 ```
 
 ## Rate Limiting

@@ -28,6 +28,8 @@ from .exceptions import (
     WBNotFoundError,
     WBRateLimitError,
     WBServerError,
+    WBTaskFailedError,
+    WBTaskTimeoutError,
     WBTimeoutError,
     WBValidationError,
 )
@@ -52,4 +54,6 @@ __all__ = [
     "WBServerError",
     "WBTimeoutError",
     "WBConnectionError",
+    "WBTaskTimeoutError",
+    "WBTaskFailedError",
 ]

@@ -32,14 +32,14 @@ DEFAULT_RATE_LIMITS = {
     "analytics": {"rpm": 60, "burst": 10},
     "prices": {"rpm": 100, "burst": 5},  # 10 req / 6 sec
     "marketplace": {"rpm": 300, "burst": 20},
-    "statistics": {"rpm": 60, "burst": 10},
+    "statistics": {"rpm": 1, "burst": 1},  # 1 req / min - VERY LOW!
     "promotion": {"rpm": 60, "burst": 10},
     "feedbacks": {"rpm": 100, "burst": 10},
     "chat": {"rpm": 60, "burst": 10},
     "supplies": {"rpm": 60, "burst": 10},
     "returns": {"rpm": 60, "burst": 10},
     "documents": {"rpm": 60, "burst": 10},
-    "finance": {"rpm": 60, "burst": 10},
+    "finance": {"rpm": 1, "burst": 1},  # 1 req / min - VERY LOW!
     "common": {"rpm": 60, "burst": 10},
 }
 
