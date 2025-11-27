@@ -312,6 +312,263 @@ print(f"Средний чек: {summary.average_order_value:.2f}₽")
 - До 100,000 строк за запрос
 - 50+ полей в каждой строке отчёта
 
+### Marketing API - Рекламные кампании (только чтение)
+
+```python
+from datetime import datetime, timedelta
+
+# === Список кампаний ===
+campaigns = client.marketing.list_campaigns()
+print(f"Всего кампаний: {len(campaigns.all)}")
+print(f"Активных: {len(campaigns.active)}")
+print(f"На паузе: {len(campaigns.paused)}")
+
+# === Информация о кампаниях ===
+campaign_ids = campaigns.active[:5]  # Первые 5 активных
+campaigns_info = client.marketing.get_campaigns_info(campaign_ids)
+for camp in campaigns_info:
+    print(f"ID: {camp.campaign_id}, Название: {camp.name}, Тип: {camp.type}")
+
+# === Статистика кампаний ===
+date_to = datetime.now()
+date_from = date_to - timedelta(days=7)
+
+stats = client.marketing.get_full_stats(
+    campaign_ids=[12345, 12346],
+    date_from=date_from,
+    date_to=date_to
+)
+
+for stat in stats:
+    print(f"\n=== Кампания {stat.campaign_id} ({stat.name}) ===")
+    print(f"Показы: {stat.views:,}")
+    print(f"Клики: {stat.clicks} (CTR: {stat.ctr:.2f}%)")
+    print(f"Расход: {stat.sum_:,.2f}₽ (CPC: {stat.cpc:.2f}₽)")
+    print(f"Заказы: {stat.orders} (CR: {stat.cr:.2f}%)")
+    print(f"Сумма заказов: {stat.sum_price:,.2f}₽")
+    print(f"ROAS: {stat.roas:.2f}")
+    print(f"CPO: {stat.cost_per_order:.2f}₽")
+    print(f"Средний чек: {stat.avg_order_value:.2f}₽")
+
+# === Статистика по ключевым словам ===
+keywords = client.marketing.get_keyword_stats(campaign_id=12345)
+for kw in keywords[:10]:
+    print(f"Запрос: {kw.keyword}")
+    print(f"  Показы: {kw.views}, Клики: {kw.clicks}, Заказы: {kw.orders}")
+    print(f"  Расход: {kw.sum_:.2f}₽, ROAS: {kw.sum_price/kw.sum_ if kw.sum_ else 0:.2f}")
+
+# === Статистика по кластерам ===
+clusters = client.marketing.get_cluster_stats(
+    campaign_id=12345,
+    date_from=date_from,
+    date_to=date_to
+)
+for cluster in clusters[:10]:
+    print(f"Кластер: {cluster.cluster} (запросов: {cluster.count})")
+    print(f"  Показы: {cluster.views}, Клики: {cluster.clicks}, Заказы: {cluster.orders}")
+
+# === Финансы рекламного счёта ===
+balance = client.marketing.get_balance()
+print(f"\n=== Баланс рекламного счёта ===")
+print(f"Доступно: {balance.balance:,.2f}₽")
+print(f"Бонусы: {balance.bonus:,.2f}₽")
+print(f"Всего: {balance.total:,.2f}₽")
+
+# === История затрат ===
+expenses = client.marketing.get_expenses_history(
+    date_from=date_from,
+    date_to=date_to
+)
+total_spent = sum(exp.sum_ for exp in expenses)
+print(f"\nИтого затрат за период: {total_spent:,.2f}₽")
+for exp in expenses[:5]:
+    print(f"{exp.date}: {exp.campaign_name} - {exp.sum_:.2f}₽")
+
+# === История пополнений ===
+payments = client.marketing.get_payments_history(
+    date_from=date_from,
+    date_to=date_to
+)
+total_deposited = sum(pay.sum_ for pay in payments)
+print(f"\nИтого пополнений за период: {total_deposited:,.2f}₽")
+```
+
+**Rate Limit**: 60 запросов/минуту
+
+### Promotions API - Акции на календаре (только чтение)
+
+```python
+# === Список акций ===
+promotions = client.promotions.get_promotions_list()
+print(f"Найдено акций: {len(promotions)}")
+
+for promo in promotions:
+    print(f"\nАкция: {promo.name}")
+    print(f"ID: {promo.promotion_id}")
+    print(f"Период: {promo.start_date} - {promo.end_date}")
+    print(f"Активна: {promo.is_active}")
+
+# === Детали акции ===
+if promotions:
+    promo_id = promotions[0].promotion_id
+    details = client.promotions.get_promotions_details(promo_id)
+
+    print(f"\n=== Детали акции {details.name} ===")
+    print(f"Описание: {details.description}")
+    print(f"Тип: {details.type}")
+    print(f"Механика: {details.mechanic}")
+    if details.discount_value:
+        print(f"Скидка: {details.discount_value}% ({details.discount_type})")
+    if details.min_price:
+        print(f"Минимальная цена: {details.min_price}₽")
+    if details.max_price:
+        print(f"Максимальная цена: {details.max_price}₽")
+    print(f"Категории: {', '.join(details.categories)}")
+
+# === Товары для акции ===
+if promotions:
+    items = client.promotions.get_promotion_items(promotions[0].promotion_id)
+
+    print(f"\n=== Товары доступные для участия ({len(items)}) ===")
+    for item in items[:10]:
+        print(f"\nNM ID: {item.nm_id}")
+        print(f"Артикул: {item.vendor_code}")
+        print(f"Название: {item.title}")
+        print(f"Цена: {item.price}₽ (скидка {item.discount}%)")
+        if item.promo_price:
+            print(f"Цена с акцией: {item.promo_price}₽")
+        print(f"Участвует: {'Да' if item.is_participating else 'Нет'}")
+        print(f"Доступен: {'Да' if item.is_available else 'Нет'}")
+        print(f"Остаток: {item.stock} шт.")
+```
+
+**Rate Limit**: 60 запросов/минуту
+
+### Reports API - Отчёты и аналитика
+
+```python
+from datetime import datetime, timedelta
+
+date_to = datetime.now()
+date_from = date_to - timedelta(days=7)
+
+# === Основные отчёты (Rate Limit: 1 req/min) ===
+
+# Поставки
+incomes = client.reports.get_incomes(date_from=date_from)
+print(f"Поставок: {len(incomes)}")
+for income in incomes[:5]:
+    print(f"Поставка №{income.number}: {income.quantity} шт, {income.total_price}₽")
+
+# Остатки на складах
+stocks = client.reports.get_stocks(date_from=date_from)
+total_quantity = sum(s.quantity for s in stocks)
+print(f"\nВсего остатков: {total_quantity} шт на {len(stocks)} позиций")
+
+# Заказы
+orders = client.reports.get_orders(date_from=date_from, flag=0)
+total_orders = sum(1 for o in orders if not o.is_cancel)
+print(f"\nЗаказов: {total_orders} (отменено: {len(orders) - total_orders})")
+
+# Продажи и возвраты
+sales = client.reports.get_sales(date_from=date_from, flag=0)
+revenue = sum(s.for_pay for s in sales if s.is_storno == 0)
+returns = sum(1 for s in sales if s.is_storno == 1)
+print(f"\nПродано: {len(sales) - returns}, возвратов: {returns}")
+print(f"Выручка: {revenue:,.2f}₽")
+
+# === Региональная аналитика ===
+
+region_sales = client.reports.get_region_sales(date_from=date_from, date_to=date_to)
+by_region = {}
+for sale in region_sales:
+    region = sale.region
+    if region not in by_region:
+        by_region[region] = {"quantity": 0, "revenue": 0}
+    by_region[region]["quantity"] += sale.quantity
+    by_region[region]["revenue"] += sale.retail_amount
+
+print("\n=== Продажи по регионам ===")
+for region, data in sorted(by_region.items(), key=lambda x: x[1]["revenue"], reverse=True)[:10]:
+    print(f"{region}: {data['quantity']} шт, {data['revenue']:,.2f}₽")
+
+# === Штрафы и удержания ===
+
+# Штрафы за габариты
+measurements = client.reports.get_warehouse_measurements(date_from, date_to)
+total_penalty = sum(m.penalty for m in measurements)
+print(f"\nШтрафы за габариты: {total_penalty:,.2f}₽ ({len(measurements)} позиций)")
+
+# Штрафы за самовыкупы
+antifraud = client.reports.get_antifraud_details(date_from, date_to)
+antifraud_penalty = sum(a.deduction for a in antifraud)
+print(f"Штрафы за самовыкупы: {antifraud_penalty:,.2f}₽ ({len(antifraud)} товаров)")
+
+# Штрафы за подмены
+attachments = client.reports.get_incorrect_attachments(date_from, date_to)
+attachments_penalty = sum(a.penalty for a in attachments)
+print(f"Штрафы за подмены: {attachments_penalty:,.2f}₽ ({len(attachments)} случаев)")
+
+# Штрафы за маркировку
+labeling = client.reports.get_goods_labeling(date_from, date_to)
+labeling_penalty = sum(l.penalty for l in labeling)
+print(f"Штрафы за маркировку: {labeling_penalty:,.2f}₽")
+
+# Штрафы за смену характеристик
+characteristics = client.reports.get_characteristics_change(date_from, date_to)
+char_penalty = sum(c.penalty for c in characteristics)
+print(f"Штрафы за смену характеристик: {char_penalty:,.2f}₽")
+
+print(f"\nВсего штрафов: {sum([total_penalty, antifraud_penalty, attachments_penalty, labeling_penalty, char_penalty]):,.2f}₽")
+
+# === Доля бренда ===
+
+brands = client.reports.get_brand_list()
+print(f"\n=== Ваши бренды ({len(brands)}) ===")
+for brand in brands:
+    print(f"- {brand.brand}")
+
+    # Категории бренда
+    subjects = client.reports.get_parent_subjects(brand.brand)
+    for subject in subjects[:3]:
+        # Доля бренда в категории
+        share = client.reports.get_brand_share(
+            brand=brand.brand,
+            subject_id=subject.parent_id,
+            date_from=date_from,
+            date_to=date_to
+        )
+        if share:
+            print(f"  {subject.parent_name}: доля {share[0].brand_share_percent:.1f}%")
+
+# === Генерируемые отчёты (с системой задач) ===
+
+# Отчёт об остатках на складах (детальный)
+print("\n=== Генерация отчёта об остатках ===")
+task = client.reports.create_warehouse_remains()
+print(f"Задача создана: {task.task_id}")
+
+# Ждём готовности
+status = client.reports.wait_for_warehouse_remains(task.task_id, timeout=300)
+if status.is_completed:
+    print("Отчёт готов!")
+    # Скачиваем файл
+    report_data = client.reports.download_warehouse_remains(task.task_id)
+    with open("warehouse_remains.xlsx", "wb") as f:
+        f.write(report_data)
+    print(f"Отчёт сохранён: warehouse_remains.xlsx ({len(report_data)} байт)")
+
+# Аналогично для других отчётов:
+# - create_acceptance_report() -> wait_for_acceptance_report() -> download_acceptance_report()
+# - create_paid_storage() -> wait_for_paid_storage() -> download_paid_storage()
+```
+
+**⚠️ Важно**:
+- Основные отчёты: Rate Limit **1 запрос/минуту**
+- Некоторые методы имеют особые лимиты (см. документацию)
+- Генерируемые отчёты возвращают Excel/CSV файлы
+- Используйте wait_for_* методы для ожидания готовности отчётов
+
 ## Обработка ошибок
 
 ```python

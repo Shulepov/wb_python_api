@@ -1,6 +1,5 @@
 """Tests for WildberriesClient."""
 
-import pytest
 from wb_api import WildberriesClient
 
 

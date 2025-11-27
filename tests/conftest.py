@@ -1,6 +1,7 @@
 """Pytest fixtures for WB API tests."""
 
 import pytest
+
 from wb_api import WildberriesClient
 
 

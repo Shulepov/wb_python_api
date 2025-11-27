@@ -6,7 +6,10 @@ import httpx
 from .api.common import CommonAPI
 from .api.content import ContentAPI
 from .api.finance import FinanceAPI
+from .api.marketing import MarketingAPI
 from .api.prices import PricesAPI
+from .api.promotions import PromotionsAPI
+from .api.reports import ReportsAPI
 from .api.statistics import StatisticsAPI
 from .auth import TokenDecoder, TokenInfo
 from .config import WBConfig
@@ -95,6 +98,27 @@ class WildberriesClient:
             self._client,
             self._token,
             self._rate_limiters.get("common", RateLimiter(60, 10)),
+            self._sandbox,
+        )
+
+        self.marketing = MarketingAPI(
+            self._client,
+            self._token,
+            self._rate_limiters.get("promotion", RateLimiter(60, 10)),
+            self._sandbox,
+        )
+
+        self.promotions = PromotionsAPI(
+            self._client,
+            self._token,
+            self._rate_limiters.get("promotion", RateLimiter(60, 10)),
+            self._sandbox,
+        )
+
+        self.reports = ReportsAPI(
+            self._client,
+            self._token,
+            self._rate_limiters.get("statistics", RateLimiter(1, 1)),
             self._sandbox,
         )
 

@@ -1,6 +1,5 @@
 """Tests for task utilities."""
 
-import time
 
 import pytest
 

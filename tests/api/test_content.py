@@ -1,6 +1,5 @@
 """Tests for Content API."""
 
-import pytest
 from wb_api.api.content import ContentAPI
 
 

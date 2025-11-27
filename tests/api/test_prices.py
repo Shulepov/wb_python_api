@@ -1,6 +1,5 @@
 """Tests for Prices API."""
 
-import pytest
 
 from wb_api.api.prices import PricesAPI
 

@@ -1,6 +1,7 @@
 """Tests for TokenDecoder."""
 
 import pytest
+
 from wb_api.auth import TokenDecoder
 
 

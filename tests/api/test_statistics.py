@@ -1,6 +1,5 @@
 """Tests for Statistics API."""
 
-import pytest
 
 from wb_api.api.statistics import StatisticsAPI
 

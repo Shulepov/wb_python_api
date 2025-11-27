@@ -1,6 +1,5 @@
 """Tests for Finance API."""
 
-import pytest
 
 from wb_api.api.finance import FinanceAPI
 

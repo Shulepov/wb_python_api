@@ -1,7 +1,7 @@
 """Tests for RateLimiter."""
 
 import time
-import pytest
+
 from wb_api.rate_limiter import RateLimiter, RateLimitState
 
 
