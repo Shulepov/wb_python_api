@@ -21,12 +21,17 @@ class CampaignType(int, Enum):
 
 class CampaignStatus(int, Enum):
     """Campaign status."""
-
+    DELETED = -1 # Удалена
     PREPARING = 4  # Готовится к запуску
     PAUSED = 7  # На паузе
+    CANCELED = 8 # Отменена
     ACTIVE = 9  # Активна
     COMPLETED = 11  # Завершена
 
+class PaymentStatus(int, Enum):
+    """Campaign status."""
+    ERROR = 0 # Ошибка
+    HANDLED = 1  # Обработано
 
 class Campaign(WBBaseModel):
     """Campaign basic information."""
@@ -41,13 +46,12 @@ class Campaign(WBBaseModel):
     end_date: datetime | None = Field(alias="endTime", default=None)
 
 
+
 class CampaignListResponse(WBBaseModel):
     """Response with list of campaigns."""
 
-    all: list[int] = Field(default_factory=list)  # All campaign IDs
-    active: list[int] = Field(default_factory=list)  # Active campaign IDs
-    paused: list[int] = Field(default_factory=list)  # Paused campaign IDs
-    completed: list[int] = Field(default_factory=list)  # Completed campaign IDs
+    all: int = Field(alias="all")  # All campaigns amount
+    adverts: list[dict] = Field(alias="adverts", default_factory=list)
 
 
 class CampaignInfo(WBBaseModel):
@@ -180,17 +184,20 @@ class Expense(WBBaseModel):
     """Advertising expense record."""
 
     campaign_id: int = Field(alias="advertId")
-    campaign_name: str = Field(alias="advertName")
-    date: date
-    sum_: float = Field(alias="sum")  # Expense amount (rubles)
-    type: int  # Expense type
+    campaign_name: str = Field(alias="campName")
+    upd_num: int = Field(alias="updNum") # Номер выставленного документа
+    upd_time: str | None = Field(alias="updTime", default=None)
+    advert_type: int = Field(alias="advertType") #Тип кампании
+    payment_type: str = Field(alias="paymentType") #Источник списания
+    advert_status: CampaignStatus = Field(alias="advertStatus")
+    upd_sum: float = Field(alias="updSum")  # Expense amount (rubles)
 
 
 class Payment(WBBaseModel):
     """Advertising payment record."""
-
-    date: datetime
-    sum_: float = Field(alias="sum")  # Payment amount (rubles)
-    type: str  # Payment type
-    status: str  # Payment status
-    payment_id: str = Field(alias="paymentId")
+    id: int = Field(alias="id") #id платежа
+    date: datetime = Field(alias="date") #дата платежа
+    sum: float = Field(alias="sum")  # Payment amount (rubles)
+    type: str  # Тип источника списания
+    status: PaymentStatus = Field(alias="statusId")  # Payment status
+    card_status: str = Field(alias="cardStatus") #Статус операции(при оплате картой

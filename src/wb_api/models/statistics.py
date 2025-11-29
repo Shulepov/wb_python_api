@@ -20,6 +20,7 @@ class SalesReportItem(WBBaseModel):
 
     # Report identification
     realizationreport_id: int = Field(alias="realizationreport_id")
+    srid: str = Field(alias="srid")
     date_from: datetime = Field(alias="date_from")
     date_to: datetime = Field(alias="date_to")
     create_dt: datetime = Field(alias="create_dt")
@@ -35,7 +36,7 @@ class SalesReportItem(WBBaseModel):
     brand_name: str = Field(alias="brand_name")
     sa_name: str = Field(alias="sa_name")  # Subject area
     ts_name: str = Field(alias="ts_name")  # Tech size
-    barcode: str
+    barcode: str = Field(alias="barcode")
     doc_type_name: str = Field(alias="doc_type_name")
 
     # Quantity and pricing
@@ -63,7 +64,7 @@ class SalesReportItem(WBBaseModel):
     # Discounts and promotions
     product_discount_for_report: float = Field(alias="product_discount_for_report", default=0.0)
     supplier_promo: float = Field(alias="supplier_promo", default=0.0)
-    rid: int
+    #rid: int
 
     # WB calculations
     ppvz_spp_prc: float = Field(alias="ppvz_spp_prc", default=0.0)
@@ -128,35 +129,3 @@ class SalesReportItem(WBBaseModel):
         return self.ppvz_for_pay - self.penalty + self.additional_payment
 
 
-class SalesSummary(WBBaseModel):
-    """Aggregated sales summary."""
-
-    total_items: int = 0
-    quantity_sold: int = 0
-    revenue: float = 0.0  # Total sales amount
-    to_seller: float = 0.0  # Total to pay to seller
-    commission: float = 0.0  # Total WB commission
-    delivery_cost: float = 0.0  # Total delivery costs
-    acquiring_fee: float = 0.0  # Total acquiring fees
-    penalty: float = 0.0  # Total penalties
-    storage_fee: float = 0.0  # Total storage fees
-    additional_payment: float = 0.0  # Total additional payments
-
-    @property
-    def net_to_seller(self) -> float:
-        """Net amount to seller after all fees and penalties."""
-        return self.to_seller - self.penalty + self.additional_payment
-
-    @property
-    def average_order_value(self) -> float:
-        """Average order value."""
-        if self.quantity_sold == 0:
-            return 0.0
-        return self.revenue / self.quantity_sold
-
-    @property
-    def commission_percent(self) -> float:
-        """Average commission percentage."""
-        if self.revenue == 0:
-            return 0.0
-        return (self.commission / self.revenue) * 100

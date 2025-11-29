@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any
 
 from ..constants import DOMAINS, SANDBOX_DOMAINS
-from ..models.statistics import ReportPeriod, SalesReportItem, SalesSummary
+from ..models.statistics import ReportPeriod, SalesReportItem
 from .base import BaseAPI
 
 
@@ -133,44 +133,4 @@ class StatisticsAPI(BaseAPI):
             # Update rrd_id for next page
             rrd_id = items[-1].rrd_id
 
-    def get_sales_summary(
-        self,
-        date_from: str | datetime,
-        date_to: str | datetime,
-        period: ReportPeriod | str = ReportPeriod.WEEKLY,
-    ) -> SalesSummary:
-        """
-        Get aggregated sales summary for period.
 
-        Args:
-            date_from: Start date
-            date_to: End date
-            period: Report period
-
-        Returns:
-            SalesSummary object with aggregated statistics
-
-        Example:
-            >>> summary = client.statistics.get_sales_summary(
-            ...     date_from="2024-01-01",
-            ...     date_to="2024-01-31"
-            ... )
-            >>> print(f"Revenue: {summary.revenue}₽")
-            >>> print(f"To seller: {summary.to_seller}₽")
-            >>> print(f"Commission: {summary.commission_percent:.1f}%")
-            >>> print(f"Net: {summary.net_to_seller}₽")
-        """
-        items = list(self.iter_sales_report(date_from, date_to, period=period))
-
-        return SalesSummary(
-            total_items=len(items),
-            quantity_sold=sum(item.quantity for item in items),
-            revenue=sum(item.retail_amount for item in items),
-            to_seller=sum(item.ppvz_for_pay for item in items),
-            commission=sum(item.ppvz_sales_commission for item in items),
-            delivery_cost=sum(abs(item.delivery_amount) for item in items),
-            acquiring_fee=sum(item.acquiring_fee for item in items),
-            penalty=sum(item.penalty for item in items),
-            storage_fee=sum(item.storage_fee for item in items),
-            additional_payment=sum(item.additional_payment for item in items),
-        )

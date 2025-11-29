@@ -9,7 +9,6 @@ def test_statistics_api_has_methods():
     methods = [
         "get_sales_report",
         "iter_sales_report",
-        "get_sales_summary",
     ]
 
     for method in methods:

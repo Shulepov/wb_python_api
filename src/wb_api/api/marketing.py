@@ -251,27 +251,47 @@ class MarketingAPI(BaseAPI):
     ) -> list[Expense]:
         """Get advertising expenses history for specified period.
 
+        Note: API has 31 days limit per request. This method automatically
+        splits longer periods into 31-day chunks.
+
         Args:
             date_from: Start date.
             date_to: End date.
 
         Returns:
-            List of Expense objects.
+            List of Expense objects for the entire period.
 
         Rate limit: 60 requests/minute
         """
+        from datetime import timedelta
+
         if isinstance(date_from, datetime):
             date_from = date_from.date()
         if isinstance(date_to, datetime):
             date_to = date_to.date()
 
-        params = {
-            "dateFrom": date_from.isoformat(),
-            "dateTo": date_to.isoformat(),
-        }
+        # Split into 31-day chunks (API limit: 31 days per request)
+        all_expenses = []
+        current_date = date_from
 
-        data = self._get("/adv/v1/upd", params=params)
-        return [Expense(**item) for item in data]
+        while current_date <= date_to:
+            # Calculate end of current chunk (max 31 days from current_date)
+            chunk_end = min(current_date + timedelta(days=30), date_to)
+
+            # Make request for this chunk
+            params = {
+                "from": current_date.isoformat(),
+                "to": chunk_end.isoformat(),
+            }
+
+            data = self._get("/adv/v1/upd", params=params)
+            expenses = [Expense(**item) for item in data]
+            all_expenses.extend(expenses)
+
+            # Move to next chunk (start day after chunk_end)
+            current_date = chunk_end + timedelta(days=1)
+
+        return all_expenses
 
     def get_payments_history(
         self,
@@ -280,24 +300,44 @@ class MarketingAPI(BaseAPI):
     ) -> list[Payment]:
         """Get advertising payments history for specified period.
 
+        Note: API has 31 days limit per request. This method automatically
+        splits longer periods into 31-day chunks.
+
         Args:
             date_from: Start date.
             date_to: End date.
 
         Returns:
-            List of Payment objects.
+            List of Payment objects for the entire period.
 
         Rate limit: 60 requests/minute
         """
+        from datetime import timedelta
+
         if isinstance(date_from, datetime):
             date_from = date_from.date()
         if isinstance(date_to, datetime):
             date_to = date_to.date()
 
-        params = {
-            "dateFrom": date_from.isoformat(),
-            "dateTo": date_to.isoformat(),
-        }
+        # Split into 31-day chunks (API limit: 31 days per request)
+        all_payments = []
+        current_date = date_from
 
-        data = self._get("/adv/v1/payments", params=params)
-        return [Payment(**item) for item in data]
+        while current_date <= date_to:
+            # Calculate end of current chunk (max 31 days from current_date)
+            chunk_end = min(current_date + timedelta(days=30), date_to)
+
+            # Make request for this chunk
+            params = {
+                "from": current_date.isoformat(),
+                "to": chunk_end.isoformat(),
+            }
+
+            data = self._get("/adv/v1/payments", params=params)
+            payments = [Payment(**item) for item in data]
+            all_payments.extend(payments)
+
+            # Move to next chunk (start day after chunk_end)
+            current_date = chunk_end + timedelta(days=1)
+
+        return all_payments
