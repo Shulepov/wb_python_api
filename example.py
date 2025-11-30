@@ -67,6 +67,19 @@ def get_seller_balance(client: WildberriesClient):
         print(f"Failed to get balance: {e}")
     print()
 
+def get_seller_info(client: WildberriesClient):
+    """Get seller information."""
+    print("Getting seller information...")
+    try:
+        seller = client.common.get_seller_info()
+        print(f"  Legal name: {seller.name}")
+        print(f"  Trade mark: {seller.trade_mark}")
+        print(f"  Seller ID (SID): {seller.sid}")
+    except Exception as e:
+        print(f"Failed to get seller info: {e}")
+    print()
+
+
 def get_sales_summary(client: WildberriesClient):
     """Get sales summary (not implemented - use get_marketing_analytics instead)."""
     print("get_sales_summary is deprecated - use get_marketing_analytics instead")
@@ -213,6 +226,9 @@ def main():
     with WildberriesClient(token=TOKEN, sandbox=False) as client:
         # Get token information
         get_token_info(client)
+
+        # Get seller information
+        get_seller_info(client)
 
         # Check API connection
         print("Checking API connection...")

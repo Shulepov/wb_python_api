@@ -7,6 +7,7 @@ from .base import (
     TaskStatus,
     WBBaseModel,
 )
+from .seller_info import SellerInfo
 
 __all__ = [
     "WBBaseModel",
@@ -14,4 +15,5 @@ __all__ = [
     "BaseTask",
     "BaseTaskResponse",
     "BaseTaskDetails",
+    "SellerInfo",
 ]
