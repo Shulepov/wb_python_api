@@ -1,7 +1,7 @@
 """Statistics API for sales reports and analytics."""
 
 from collections.abc import Iterator
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from typing import Any
 
 from ..constants import DOMAINS, SANDBOX_DOMAINS
@@ -132,5 +132,23 @@ class StatisticsAPI(BaseAPI):
 
             # Update rrd_id for next page
             rrd_id = items[-1].rrd_id
+
+    def get_last_completed_week_dates() -> tuple[date, date]:
+        """
+        Возвращает даты прошлой завершенной недели (пн-вс)
+        
+        WB генерирует отчет за неделю в понедельник следующей недели.
+        Поэтому "прошлая завершенная неделя" - это неделя, которая 
+        закончилась в прошлое воскресенье.
+        """
+        today = datetime.now().date()
+
+        # Понедельник прошлой недели
+        date_from = today - timedelta(days=today.weekday() + 7)
+
+        # Воскресенье прошлой недели
+        date_to = date_from + timedelta(days=6)
+
+        return date_from, date_to
 
 
