@@ -78,6 +78,7 @@ class SalesReportItem(WBBaseModel):
     ppvz_for_pay: float = Field(alias="ppvz_for_pay")  # AMOUNT TO PAY TO SELLER
     ppvz_reward: float = Field(alias="ppvz_reward", default=0.0)
     acquiring_fee: float = Field(alias="acquiring_fee", default=0.0)
+    acquiring_percent: float = Field(alias="acquiring_percent", default=0.0)
     acquiring_bank: str = Field(alias="acquiring_bank", default="")
 
     # Additional WB fields
