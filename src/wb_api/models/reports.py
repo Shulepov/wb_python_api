@@ -176,8 +176,8 @@ class ReportTaskResponse(WBBaseModel):
 
 
 class StatusResponseTaskData(WBBaseModel):
-    task_id: str = Field(alias="taskId")
-    status: str  
+    task_id: str = Field(alias="id")
+    status: str  = Field(alias="status")
 
 class ReportTaskStatus(WBBaseModel):
     """Report task status."""
