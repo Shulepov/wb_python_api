@@ -426,7 +426,7 @@ class ReportsAPI(BaseAPI, TaskAPIMixin):
         )
         return response.content
 
-    def create_acceptance_report(self) -> ReportTaskResponse:
+    def create_acceptance_report(self, date_from: date | datetime, date_to: date | datetime) -> ReportTaskResponse:
         """Create acceptance report task.
 
         Returns:
@@ -434,7 +434,15 @@ class ReportsAPI(BaseAPI, TaskAPIMixin):
 
         Rate limit: 1 request/minute
         """
-        data = self._get("/api/v1/acceptance_report")
+        if isinstance(date_from, datetime):
+            date_from = date_from.date()
+        if isinstance(date_to, datetime):
+            date_to = date_to.date()
+
+        data = self._get("/api/v1/acceptance_report", params={
+            "date_from": date_from.isoformat(),
+            "date_to": date_to.isoformat()
+        })
         return ReportTaskResponse(**data)
 
     def check_acceptance_status(self, task_id: str) -> ReportTaskStatus:
@@ -468,7 +476,7 @@ class ReportsAPI(BaseAPI, TaskAPIMixin):
         )
         return response.content
 
-    def create_paid_storage(self) -> ReportTaskResponse:
+    def create_paid_storage(self, date_from: date | datetime, date_to: date | datetime) -> ReportTaskResponse:
         """Create paid storage report task.
 
         Returns:
@@ -476,7 +484,15 @@ class ReportsAPI(BaseAPI, TaskAPIMixin):
 
         Rate limit: 1 request/minute (burst 5)
         """
-        data = self._get("/api/v1/paid_storage")
+        if isinstance(date_from, datetime):
+            date_from = date_from.date()
+        if isinstance(date_to, datetime):
+            date_to = date_to.date()
+
+        data = self._get("/api/v1/paid_storage", params={
+            "date_from": date_from.isoformat(),
+            "date_to": date_to.isoformat()
+        })
         return ReportTaskResponse(**data)
 
     def check_paid_storage_status(self, task_id: str) -> ReportTaskStatus:
