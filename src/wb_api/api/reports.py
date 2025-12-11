@@ -466,7 +466,7 @@ class ReportsAPI(BaseAPI):
 
         while True:
             # Проверить текущий статус
-            status = check_fn(self, task_id)
+            status = check_fn(task_id)
 
             # Если задача завершена - вернуть статус
             if status.is_completed:
