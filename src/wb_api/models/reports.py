@@ -186,7 +186,7 @@ class ReportTaskStatus(WBBaseModel):
     @property
     def is_completed(self) -> bool:
         """Check if task is completed."""
-        return self.data.status == ("purged", "canceled", "done")
+        return self.data.status in ("purged", "canceled", "done")
     
     @property
     def is_successful(self) -> bool:
