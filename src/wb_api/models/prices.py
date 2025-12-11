@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pydantic import Field
 
-from .base import BaseTaskDetails, BaseTaskResponse, WBBaseModel
+from .base import WBBaseModel
 
 # === Price Models ===
 
