@@ -2,6 +2,7 @@
 
 from datetime import date, datetime
 import time
+from typing import List, Dict
 from ..constants import DOMAINS, SANDBOX_DOMAINS
 from ..models.reports import (
     AntifraudDetail,
@@ -327,7 +328,7 @@ class ReportsAPI(BaseAPI):
         data = self._get(f"/api/v1/warehouse_remains/tasks/{task_id}/status")
         return ReportTaskStatus(**data)
 
-    def download_warehouse_remains(self, task_id: str) -> bytes:
+    def download_warehouse_remains(self, task_id: str) -> List[Dict]:
         """Download warehouse remains report.
 
         Args:
@@ -338,11 +339,11 @@ class ReportsAPI(BaseAPI):
 
         Rate limit: 1 request/minute
         """
-        response = self._client.get(
+        data = self._client.get(
             f"{self.base_url}/api/v1/warehouse_remains/tasks/{task_id}/download",
             headers=self._headers(),
         )
-        return response.content
+        return data
 
     def create_acceptance_report(self, date_from: date | datetime, date_to: date | datetime) -> ReportTaskResponse:
         """Create acceptance report task.
@@ -377,22 +378,22 @@ class ReportsAPI(BaseAPI):
         data = self._get(f"/api/v1/acceptance_report/tasks/{task_id}/status")
         return ReportTaskStatus(**data)
 
-    def download_acceptance_report(self, task_id: str) -> bytes:
+    def download_acceptance_report(self, task_id: str) -> List[Dict]:
         """Download acceptance report.
 
         Args:
             task_id: Task ID from create_acceptance_report.
 
         Returns:
-            Report file content (Excel/CSV).
+            Json array
 
         Rate limit: 1 request/minute
         """
-        response = self._client.get(
+        data = self._client.get(
             f"{self.base_url}/api/v1/acceptance_report/tasks/{task_id}/download",
             headers=self._headers(),
         )
-        return response.content
+        return data
 
     def create_paid_storage(self, date_from: date | datetime, date_to: date | datetime) -> ReportTaskResponse:
         """Create paid storage report task.
@@ -427,22 +428,22 @@ class ReportsAPI(BaseAPI):
         data = self._get(f"/api/v1/paid_storage/tasks/{task_id}/status")
         return ReportTaskStatus(**data)
 
-    def download_paid_storage(self, task_id: str) -> bytes:
+    def download_paid_storage(self, task_id: str) -> List[Dict]:
         """Download paid storage report.
 
         Args:
             task_id: Task ID from create_paid_storage.
 
         Returns:
-            Report file content (Excel/CSV).
+            JSON.
 
         Rate limit: 1 request/minute
         """
-        response = self._client.get(
+        data = self._client.get(
             f"{self.base_url}/api/v1/paid_storage/tasks/{task_id}/download",
             headers=self._headers(),
         )
-        return response.content
+        return data
 
     # === Helper methods for generated reports ===
     
