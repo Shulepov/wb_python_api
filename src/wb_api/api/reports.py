@@ -360,8 +360,8 @@ class ReportsAPI(BaseAPI, TaskAPIMixin):
             date_to = date_to.date()
 
         data = self._get("/api/v1/acceptance_report", params={
-            "date_from": date_from.isoformat(),
-            "date_to": date_to.isoformat()
+            "dateFrom": date_from.isoformat(),
+            "dateTo": date_to.isoformat()
         })
         return ReportTaskResponse(**data)
 
@@ -410,8 +410,8 @@ class ReportsAPI(BaseAPI, TaskAPIMixin):
             date_to = date_to.date()
 
         data = self._get("/api/v1/paid_storage", params={
-            "date_from": date_from.isoformat(),
-            "date_to": date_to.isoformat()
+            "dateFrom": date_from.isoformat(),
+            "dateTo": date_to.isoformat()
         })
         return ReportTaskResponse(**data)
 
