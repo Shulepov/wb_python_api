@@ -167,36 +167,37 @@ class BrandShare(WBBaseModel):
 
 # === Report Tasks ===
 
+class CreateResponseTaskData(WBBaseModel):
+    task_id: str = Field(alias="taskId")
 
 class ReportTaskResponse(WBBaseModel):
     """Response when creating a report task."""
+    data: CreateResponseTaskData = Field(alias="data")
 
+
+class StatusResponseTaskData(WBBaseModel):
     task_id: str = Field(alias="taskId")
-    status: str  # Task status
-    created_at: datetime = Field(alias="createdAt")
-
+    status: str  
 
 class ReportTaskStatus(WBBaseModel):
     """Report task status."""
-
-    task_id: str = Field(alias="taskId")
-    status: str  # "processing", "completed", "failed"
-    created_at: datetime = Field(alias="createdAt")
-    updated_at: datetime = Field(alias="updatedAt")
-    file_url: str | None = Field(alias="fileUrl", default=None)
-    error: str | None = None
+    data: StatusResponseTaskData = Field(alias="data")
 
     @property
     def is_completed(self) -> bool:
         """Check if task is completed."""
-        return self.status in ("completed", "done")
+        return self.data.status == ("purged", "canceled", "done")
+    
+    @property
+    def is_successful(self) -> bool:
+        return self.data.status == "done"
 
     @property
     def is_failed(self) -> bool:
         """Check if task failed."""
-        return self.status == "failed"
+        return self.data.status in ("purged", "canceled")
 
     @property
     def is_processing(self) -> bool:
         """Check if task is still processing."""
-        return self.status in ("processing", "pending", "in_progress")
+        return self.data.status in ("processing", "new")

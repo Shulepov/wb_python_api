@@ -34,25 +34,6 @@ class ClubDiscount(WBBaseModel):
 
 # === Request Models ===
 
-
-class UploadPricesRequest(WBBaseModel):
-    """Request for uploading prices."""
-
-    prices: list[Price]
-
-
-class UploadSizePricesRequest(WBBaseModel):
-    """Request for uploading size prices."""
-
-    prices: list[SizeUpdatePrice]
-
-
-class UploadClubDiscountsRequest(WBBaseModel):
-    """Request for uploading club discounts."""
-
-    discounts: list[ClubDiscount]
-
-
 class FilterGoodsRequest(WBBaseModel):
     """Request for filtering goods by vendor codes."""
 
@@ -61,17 +42,6 @@ class FilterGoodsRequest(WBBaseModel):
 
 # === Response Models ===
 
-
-class UploadTaskResponse(BaseTaskResponse):
-    """Response when uploading prices."""
-
-    pass
-
-
-class PriceTaskDetails(BaseTaskDetails):
-    """Detailed information about price upload task."""
-
-    pass
 
 class SizePrice(WBBaseModel):
     """Size with price information."""
@@ -114,33 +84,3 @@ class QuarantineGood(WBBaseModel):
     reason: str
     quarantine_date: datetime | None = Field(alias="quarantineDate", default=None)
 
-
-# === Task Status Models ===
-
-
-class TaskInfo(WBBaseModel):
-    """Brief task information."""
-
-    task_id: str = Field(alias="taskID")
-    created_at: datetime | None = Field(alias="createdAt", default=None)
-    status: str
-
-
-class HistoryTask(WBBaseModel):
-    """Processed task from history."""
-
-    task_id: str = Field(alias="taskID")
-    created_at: datetime | None = Field(alias="createdAt", default=None)
-    uploaded_at: datetime | None = Field(alias="uploadedAt", default=None)
-    status: str
-    total: int = 0
-    success: int = 0
-    errors: int = 0
-
-
-class BufferTask(WBBaseModel):
-    """Pending task from buffer."""
-
-    task_id: str = Field(alias="taskID")
-    created_at: datetime | None = Field(alias="createdAt", default=None)
-    status: str

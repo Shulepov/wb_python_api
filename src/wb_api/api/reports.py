@@ -1,7 +1,7 @@
 """Reports API - comprehensive reporting and analytics."""
 
 from datetime import date, datetime
-
+import time
 from ..constants import DOMAINS, SANDBOX_DOMAINS
 from ..models.reports import (
     AntifraudDetail,
@@ -18,10 +18,8 @@ from ..models.reports import (
     WarehouseMeasurement,
 )
 from .base import BaseAPI
-from .tasks import TaskAPIMixin
 
-
-class ReportsAPI(BaseAPI, TaskAPIMixin):
+class ReportsAPI(BaseAPI):
     """API for reports and analytics."""
 
     @property
@@ -447,12 +445,55 @@ class ReportsAPI(BaseAPI, TaskAPIMixin):
         return response.content
 
     # === Helper methods for generated reports ===
+    
+    def _wait_for_task(self, task_id: str, check_fn, timeout: int, interval: int) -> str:
+        """
+        Ждать завершения задачи с периодической проверкой статуса
+        
+        Args:
+            task_id: ID задачи для ожидания
+            check_fn: Функция проверки статуса (self, task_id) -> ReportTaskStatus
+            timeout: Максимальное время ожидания в секундах
+            interval: Интервал между проверками в секундах
+            
+        Returns:
+            ReportTaskStatus: Финальный статус задачи
+            
+        Raises:
+            TimeoutError: Если задача не завершилась за timeout секунд
+        """
+        start_time = time.time()
+
+        while True:
+            # Проверить текущий статус
+            status = check_fn(self, task_id)
+
+            # Если задача завершена - вернуть статус
+            if status.is_completed:
+                elapsed = time.time() - start_time
+                #logger.info(f"Task {task_id} completed in {elapsed:.1f}s")
+                return status
+
+            # Проверить timeout
+            elapsed = time.time() - start_time
+            if elapsed >= timeout:
+                raise TimeoutError(
+                    f"Task {task_id} did not complete within {timeout}s. "
+                    f"Last status: {status}"
+                )
+
+            # Подождать перед следующей проверкой (не превышая timeout)
+            remaining = timeout - elapsed
+            sleep_time = min(interval, remaining)
+
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
     def wait_for_warehouse_remains(
         self,
         task_id: str,
         timeout: int = 300,
-        interval: float = 5.0,
+        interval: float = 10.0,
     ) -> ReportTaskStatus:
         """Wait for warehouse remains report to complete.
 
@@ -475,7 +516,7 @@ class ReportsAPI(BaseAPI, TaskAPIMixin):
         self,
         task_id: str,
         timeout: int = 300,
-        interval: float = 5.0,
+        interval: float = 10.0,
     ) -> ReportTaskStatus:
         """Wait for acceptance report to complete.
 
@@ -498,7 +539,7 @@ class ReportsAPI(BaseAPI, TaskAPIMixin):
         self,
         task_id: str,
         timeout: int = 300,
-        interval: float = 5.0,
+        interval: float = 10.0,
     ) -> ReportTaskStatus:
         """Wait for paid storage report to complete.
 
