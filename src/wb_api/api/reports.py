@@ -2,22 +2,15 @@
 
 from datetime import date, datetime
 import time
-from typing import List, Dict
+from typing import List, Dict, Optional
 from ..constants import DOMAINS, SANDBOX_DOMAINS
 from ..models.reports import (
-    AntifraudDetail,
-    Brand,
-    BrandShare,
-    CharacteristicsChange,
-    ExciseReportItem,
-    GoodsLabeling,
-    IncorrectAttachment,
+    MeasurementTab,
     ParentSubject,
-    RegionSale,
     ReportTaskResponse,
-    ReportTaskStatus,
-    WarehouseMeasurement,
+    ReportTaskStatus
 )
+
 from .base import BaseAPI
 
 class ReportsAPI(BaseAPI):
@@ -35,7 +28,7 @@ class ReportsAPI(BaseAPI):
 
     def get_excise_report(
         self, date_from: date | datetime, date_to: date | datetime
-    ) -> list[ExciseReportItem]:
+    ) -> list[Dict]:
         """Get excise (marking) report.
 
         Args:
@@ -58,7 +51,7 @@ class ReportsAPI(BaseAPI):
         }
 
         data = self._post("/api/v1/analytics/excise-report", json=payload)
-        return [ExciseReportItem(**item) for item in data]
+        return data.get('data', [])
 
     # === Deduction Reports ===
 
@@ -66,12 +59,17 @@ class ReportsAPI(BaseAPI):
         self,
         date_from: date | datetime,
         date_to: date | datetime,
-    ) -> list[WarehouseMeasurement]:
+        tab: MeasurementTab,
+        limit: int = 1000,
+        offset: int = 0
+    ) -> list[Dict]:
         """Get warehouse measurements (size penalties) report.
 
         Args:
             date_from: Start date.
             date_to: End date.
+            limit: limit of results, max 1000
+            offset: results offset
 
         Returns:
             List of WarehouseMeasurement objects.
@@ -86,21 +84,23 @@ class ReportsAPI(BaseAPI):
         params = {
             "dateFrom": date_from.isoformat(),
             "dateTo": date_to.isoformat(),
+            "tab": tab,
+            "limit": limit,
+            "offset": offset
         }
 
         data = self._get("/api/v1/analytics/warehouse-measurements", params=params)
-        return [WarehouseMeasurement(**item) for item in data]
+        return data.get('data', {}).get('reports', [])
 
     def get_antifraud_details(
         self,
-        date_from: date | datetime,
-        date_to: date | datetime,
-    ) -> list[AntifraudDetail]:
+        date: Optional[date | datetime],
+    ) -> list[Dict]:
         """Get antifraud (self-redemption) details report.
+        Data is available from August 2023
 
         Args:
-            date_from: Start date.
-            date_to: End date.
+            date: Start date.
 
         Returns:
             List of AntifraudDetail objects.
@@ -112,24 +112,23 @@ class ReportsAPI(BaseAPI):
         if isinstance(date_to, datetime):
             date_to = date_to.date()
 
-        params = {
-            "dateFrom": date_from.isoformat(),
-            "dateTo": date_to.isoformat(),
-        }
+        params = {}
+        if date:
+            params["date"] = date_from.isoformat()
 
         data = self._get("/api/v1/analytics/antifraud-details", params=params)
-        return [AntifraudDetail(**item) for item in data]
+        return data.get('details', [])
 
     def get_incorrect_attachments(
         self,
         date_from: date | datetime,
         date_to: date | datetime,
-    ) -> list[IncorrectAttachment]:
+    ) -> list[Dict]:
         """Get incorrect attachments (product substitution) report.
 
         Args:
             date_from: Start date.
-            date_to: End date.
+            date_to: End date. Max 31 days range
 
         Returns:
             List of IncorrectAttachment objects.
@@ -147,18 +146,18 @@ class ReportsAPI(BaseAPI):
         }
 
         data = self._get("/api/v1/analytics/incorrect-attachments", params=params)
-        return [IncorrectAttachment(**item) for item in data]
+        return data.get('report', [])
 
     def get_goods_labeling(
         self,
         date_from: date | datetime,
         date_to: date | datetime,
-    ) -> list[GoodsLabeling]:
+    ) -> list[Dict]:
         """Get goods labeling penalties report.
-
+        Data available from March 2024
         Args:
             date_from: Start date.
-            date_to: End date.
+            date_to: End date. Max 31 days range
 
         Returns:
             List of GoodsLabeling objects.
@@ -176,18 +175,18 @@ class ReportsAPI(BaseAPI):
         }
 
         data = self._get("/api/v1/analytics/goods-labeling", params=params)
-        return [GoodsLabeling(**item) for item in data]
+        return data.get('report', [])
 
     def get_characteristics_change(
         self,
         date_from: date | datetime,
         date_to: date | datetime,
-    ) -> list[CharacteristicsChange]:
+    ) -> list[Dict]:
         """Get characteristics change penalties report.
-
+        Data available from 28 Dec 2021
         Args:
             date_from: Start date.
-            date_to: End date.
+            date_to: End date. Max 31 days range
 
         Returns:
             List of CharacteristicsChange objects.
@@ -205,7 +204,7 @@ class ReportsAPI(BaseAPI):
         }
 
         data = self._get("/api/v1/analytics/characteristics-change", params=params)
-        return [CharacteristicsChange(**item) for item in data]
+        return data.get('report', [])
 
     # === Region Sales ===
 
@@ -213,12 +212,12 @@ class ReportsAPI(BaseAPI):
         self,
         date_from: date | datetime,
         date_to: date | datetime,
-    ) -> list[RegionSale]:
+    ) -> list[Dict]:
         """Get region sales report.
 
         Args:
             date_from: Start date.
-            date_to: End date.
+            date_to: End date. Max 31 days range
 
         Returns:
             List of RegionSale objects.
@@ -236,11 +235,11 @@ class ReportsAPI(BaseAPI):
         }
 
         data = self._get("/api/v1/analytics/region-sale", params=params)
-        return [RegionSale(**item) for item in data]
+        return data.get('report', [])
 
     # === Brand Share ===
 
-    def get_brand_list(self) -> list[Brand]:
+    def get_brand_list(self) -> list[str]:
         """Get list of seller's brands.
 
         Returns:
@@ -249,37 +248,45 @@ class ReportsAPI(BaseAPI):
         Rate limit: 1 request/minute (burst 10)
         """
         data = self._get("/api/v1/analytics/brand-share/brands")
-        return [Brand(**item) for item in data]
+        return data
 
-    def get_parent_subjects(self, brand: str) -> list[ParentSubject]:
+    def get_parent_subjects(self, brand: str, 
+            date_from: date, date_to: date) -> list[ParentSubject]:
         """Get parent subjects (categories) for brand.
 
         Args:
             brand: Brand name.
+            date_from: date start. Min 1 Nov 2022
+            date_to: date end. max 365 days range
 
         Returns:
             List of ParentSubject objects.
 
         Rate limit: 1 request/minute (burst 10)
         """
-        params = {"brand": brand}
+        params = {
+            "brand": brand, 
+            "dateFrom": date_from.isoformat(),
+            "dateTo": date_to.isoformat()
+        }
         data = self._get("/api/v1/analytics/brand-share/parent-subjects", params=params)
+        data = data.get('data', [])
         return [ParentSubject(**item) for item in data]
 
     def get_brand_share(
         self,
+        parent_id: int,
         brand: str,
-        subject_id: int,
         date_from: date | datetime,
         date_to: date | datetime,
-    ) -> list[BrandShare]:
+    ) -> list[Dict]:
         """Get brand share report.
 
         Args:
+            parent_id: Parent id
             brand: Brand name.
-            subject_id: Subject ID.
-            date_from: Start date.
-            date_to: End date.
+            date_from: Start date. Min - 1 Nov 2022
+            date_to: End date. Max 365 days range
 
         Returns:
             List of BrandShare objects.
@@ -292,14 +299,14 @@ class ReportsAPI(BaseAPI):
             date_to = date_to.date()
 
         params = {
+            "parentId": parent_id,
             "brand": brand,
-            "subjectId": subject_id,
             "dateFrom": date_from.isoformat(),
             "dateTo": date_to.isoformat(),
         }
 
         data = self._get("/api/v1/analytics/brand-share", params=params)
-        return [BrandShare(**item) for item in data]
+        return data.get('report', [])
 
     # === Generated Reports (with tasks) ===
 
