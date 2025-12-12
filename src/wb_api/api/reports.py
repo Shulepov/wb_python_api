@@ -57,7 +57,7 @@ class ReportsAPI(BaseAPI):
 
     def get_warehouse_measurements(
         self,
-        date_from: date | datetime,
+        date_from: Optional[date | datetime],
         date_to: date | datetime,
         tab: MeasurementTab,
         limit: int = 1000,
@@ -76,18 +76,20 @@ class ReportsAPI(BaseAPI):
 
         Rate limit: 5 requests/minute
         """
-        if isinstance(date_from, datetime):
+        if date_from and isinstance(date_from, datetime):
             date_from = date_from.date()
         if isinstance(date_to, datetime):
             date_to = date_to.date()
 
         params = {
-            "dateFrom": date_from.isoformat(),
             "dateTo": date_to.isoformat(),
             "tab": tab,
             "limit": limit,
             "offset": offset
         }
+        
+        if date_from:
+            params["dateFrom"] = date_from.isoformat()
 
         data = self._get("/api/v1/analytics/warehouse-measurements", params=params)
         return data.get('data', {}).get('reports', [])
