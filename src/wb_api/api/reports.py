@@ -339,7 +339,7 @@ class ReportsAPI(BaseAPI):
 
         Rate limit: 1 request/minute
         """
-        data = self.get(
+        data = self._get(
             f"{self.base_url}/api/v1/warehouse_remains/tasks/{task_id}/download"
         )
         return data
@@ -388,7 +388,7 @@ class ReportsAPI(BaseAPI):
 
         Rate limit: 1 request/minute
         """
-        data = self.get(
+        data = self._get(
             f"{self.base_url}/api/v1/acceptance_report/tasks/{task_id}/download"
         )
         return data
@@ -437,7 +437,7 @@ class ReportsAPI(BaseAPI):
 
         Rate limit: 1 request/minute
         """
-        data = self.get(
+        data = self._get(
             f"{self.base_url}/api/v1/paid_storage/tasks/{task_id}/download"
         )
         return data
