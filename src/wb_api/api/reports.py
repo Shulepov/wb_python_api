@@ -76,10 +76,12 @@ class ReportsAPI(BaseAPI):
 
         Rate limit: 5 requests/minute
         """
-        if date_from and isinstance(date_from, datetime):
-            date_from = date_from.date()
-        if isinstance(date_to, datetime):
-            date_to = date_to.date()
+        from datetime import datetime, date, time, timezone#, timedelta
+        #gmt3 = timezone(timedelta(hours=3))
+        if date_from and isinstance(date_from, date) and not isinstance(date_from, datetime):
+            date_from = datetime.combine(date_from, time(0, 0, 0), tzinfo=timezone.utc)
+        if isinstance(date_to, date) and not isinstance(date_to, datetime):
+            date_to = datetime.combine(date_to, time(23, 59, 59), tzinfo=timezone.utc)
 
         params = {
             "dateTo": date_to.isoformat(),
