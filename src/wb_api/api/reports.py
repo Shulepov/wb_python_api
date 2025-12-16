@@ -66,7 +66,7 @@ class ReportsAPI(BaseAPI):
         """Get warehouse measurements (size penalties) report.
 
         Args:
-            date_from: Start date.
+            date_from: Start date. Optional
             date_to: End date.
             limit: limit of results, max 1000
             offset: results offset
@@ -83,11 +83,11 @@ class ReportsAPI(BaseAPI):
 
         params = {
             "dateTo": date_to.isoformat(),
-            "tab": tab,
+            "tab": tab.value,
             "limit": limit,
             "offset": offset
         }
-        
+
         if date_from:
             params["dateFrom"] = date_from.isoformat()
 
@@ -107,7 +107,7 @@ class ReportsAPI(BaseAPI):
         Returns:
             List of AntifraudDetail objects.
 
-        Rate limit: 10 requests per 100 minutes
+        Rate limit: 1 requests per 10 minutes
         """
         if isinstance(date_from, datetime):
             date_from = date_from.date()
