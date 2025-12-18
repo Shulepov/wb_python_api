@@ -220,8 +220,8 @@ class Balance(WBBaseModel):
 class CampaignBudget(WBBaseModel):
     """Campaign budget information."""
 
-    _cash: int = Field(alias="cash")
-    _netting: int = Field(alias="netting")  # unused - always 0
+    unused_cash: int = Field(alias="cash")
+    unused_netting: int = Field(alias="netting")  # unused - always 0
     total: int = Field(alias="total")
 
 
