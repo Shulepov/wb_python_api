@@ -10,7 +10,6 @@ from ..models.marketing import (
     CampaignListResponse,
     CampaignStats,
     ClusterStats,
-    DailyStats,
     Expense,
     KeywordStats,
     Payment,
@@ -42,7 +41,7 @@ class MarketingAPI(BaseAPI):
         return CampaignListResponse(**data)
 
     def get_campaigns_info(self, campaign_ids: list[int]) -> list[CampaignInfo]:
-        """Get detailed information about campaigns (type 8 - unified bid).
+        """Get detailed information about campaigns.
 
         Args:
             campaign_ids: List of campaign IDs to get info for.
@@ -52,33 +51,9 @@ class MarketingAPI(BaseAPI):
 
         Rate limit: 60 requests/minute
         """
-        data = self._post("/adv/v1/promotion/adverts", json=campaign_ids)
-        return [CampaignInfo(**item) for item in data]
-
-    def get_auction_campaigns(
-        self,
-        status: int | None = None,
-        type_: int | None = None,
-    ) -> list[CampaignInfo]:
-        """Get information about auction campaigns (manual bid).
-
-        Args:
-            status: Filter by campaign status (4, 7, 9, 11).
-            type_: Filter by campaign type (4, 5, 6, 7, 9).
-
-        Returns:
-            List of CampaignInfo objects.
-
-        Rate limit: 60 requests/minute
-        """
-        params = {}
-        if status is not None:
-            params["status"] = status
-        if type_ is not None:
-            params["type"] = type_
-
-        data = self._get("/adv/v0/auction/adverts", params=params)
-        return [CampaignInfo(**item) for item in data]
+        data = self._post("/api/advert/v2/adverts", json=campaign_ids)
+        adverts = data["adverts"]
+        return [CampaignInfo(**item) for item in adverts]
 
     # === Statistics ===
 
@@ -119,39 +94,6 @@ class MarketingAPI(BaseAPI):
             stats.append(CampaignStats(**item))
         return stats
 
-    def get_daily_stats(
-        self,
-        campaign_ids: list[int],
-        date_from: date | datetime,
-        date_to: date | datetime,
-    ) -> list[DailyStats]:
-        """Get daily campaign statistics for specified period.
-
-        Args:
-            campaign_ids: List of campaign IDs (max 100).
-            date_from: Start date.
-            date_to: End date.
-
-        Returns:
-            List of DailyStats objects (one per campaign per day).
-
-        Rate limit: 60 requests/minute
-        """
-        if isinstance(date_from, datetime):
-            date_from = date_from.date()
-        if isinstance(date_to, datetime):
-            date_to = date_to.date()
-
-        params = {
-            "id": campaign_ids,
-            "dateFrom": date_from.isoformat(),
-            "dateTo": date_to.isoformat(),
-        }
-
-        # Using POST method for fullstats with additional params
-        data = self._post("/adv/v2/fullstats", json=params)
-        return [DailyStats(**item) for item in data]
-
     def get_keyword_stats(self, campaign_id: int) -> list[KeywordStats]:
         """Get keyword statistics for manual bid campaign.
 
@@ -164,24 +106,8 @@ class MarketingAPI(BaseAPI):
         Rate limit: 60 requests/minute
         """
         params = {"id": campaign_id}
-        data = self._get("/adv/v1/stat/words", params=params)
-        keywords = data.get("keywords", [])
-        return [KeywordStats(**item) for item in keywords]
-
-    def get_auto_cluster_stats(self, campaign_id: int) -> list[ClusterStats]:
-        """Get cluster statistics for unified bid campaign.
-
-        Args:
-            campaign_id: Campaign ID (type 8).
-
-        Returns:
-            List of ClusterStats objects.
-
-        Rate limit: 60 requests/minute
-        """
-        params = {"id": campaign_id}
         data = self._get("/adv/v2/auto/stat-words", params=params)
-        return [ClusterStats(**item) for item in data]
+        return KeywordStats(**data)
 
     def get_cluster_stats(
         self,
@@ -213,7 +139,8 @@ class MarketingAPI(BaseAPI):
         }
 
         data = self._post("/adv/v0/normquery/stats", json=payload)
-        return [ClusterStats(**item) for item in data]
+        stats = data["stats"]
+        return [ClusterStats(**item) for item in stats]
 
     # === Finance ===
 

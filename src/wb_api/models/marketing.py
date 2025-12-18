@@ -21,142 +21,186 @@ class CampaignType(int, Enum):
 
 class CampaignStatus(int, Enum):
     """Campaign status."""
-    DELETED = -1 # Удалена
+
+    DELETED = -1  # Удалена
     PREPARING = 4  # Готовится к запуску
-    PAUSED = 7  # На паузе
-    CANCELED = 8 # Отменена
+    COMPLETED = 7  # Завершена
+    CANCELED = 8  # Отменена
     ACTIVE = 9  # Активна
-    COMPLETED = 11  # Завершена
+    PAUSED = 11  # На паузе
+
 
 class PaymentStatus(int, Enum):
     """Campaign status."""
-    ERROR = 0 # Ошибка
+
+    ERROR = 0  # Ошибка
     HANDLED = 1  # Обработано
 
-class Campaign(WBBaseModel):
+
+class PaymentType(str, Enum):
+    CPM = "cpm"
+    CPS = "cpc"
+
+
+class AdvertShortInfo(WBBaseModel):
+    id: int = Field(alias="advertId")
+    change_time = Field(alias="changeTime")
+
+
+class CampaignsGroupByTypeAndStatus(WBBaseModel):
     """Campaign basic information."""
 
-    campaign_id: int = Field(alias="advertId")
-    name: str
-    type: CampaignType
-    status: CampaignStatus
-    created_at: datetime = Field(alias="createTime")
-    updated_at: datetime = Field(alias="changeTime")
-    start_date: datetime | None = Field(alias="startTime", default=None)
-    end_date: datetime | None = Field(alias="endTime", default=None)
-
+    type: CampaignType = Field(alias="type")
+    status: CampaignStatus = Field(alias="status")
+    count: int = Field(alias="count")
+    advert_list: list[AdvertShortInfo] = Field(
+        alias="advert_list", default_factory=list
+    )
 
 
 class CampaignListResponse(WBBaseModel):
     """Response with list of campaigns."""
 
     all: int = Field(alias="all")  # All campaigns amount
-    adverts: list[dict] = Field(alias="adverts", default_factory=list)
+    adverts: list[CampaignsGroupByTypeAndStatus] = Field(
+        alias="adverts", default_factory=list
+    )
+
+
+class AdvertBidsKopecks(WBBaseModel):
+    search: int = Field(alias="search")
+    recommendations: int = Field(alias="recommendations")
+
+
+class AdvertSubject(WBBaseModel):
+    id: int = Field(alias="id")
+    name: str = Field(alias="name")
+
+
+class AdvertNMsSettings(WBBaseModel):
+    bids_kopecks: AdvertBidsKopecks = Field(alias="bids_kopecks")
+    subject: AdvertSubject = Field(alias="subject")
+    nm_id: int = Field(alias="nm_id")
+
+
+class AdvertPlacement(WBBaseModel):
+    search: bool = Field(alias="search")
+    recommendations: bool = Field(alias="recommendations")
+
+
+class AdvertSettings(WBBaseModel):
+    payment_type: PaymentType = Field(alias="payment_type")
+    name: str = Field(alias="name")
+    placements: AdvertPlacement = Field(alias="placements")
+
+
+class AdvertTimestamps(WBBaseModel):
+    created: datetime = Field(alias="created")
+    updated: datetime = Field(alias="updated")
+    started: datetime = Field(alias="started")
+    deleted: datetime = Field(alias="deleted")
 
 
 class CampaignInfo(WBBaseModel):
     """Detailed campaign information."""
 
-    campaign_id: int = Field(alias="advertId")
-    type: int
-    status: int
-    name: str
-    params: list[dict] = Field(default_factory=list)  # Campaign parameters
-    create_time: datetime = Field(alias="createTime")
-    change_time: datetime = Field(alias="changeTime")
-    start_time: datetime | None = Field(alias="startTime", default=None)
-    end_time: datetime | None = Field(alias="endTime", default=None)
-    daily_budget: int | None = Field(alias="dailyBudget", default=None)
-
-    # Additional fields for auction campaigns
-    search_plus_state: bool | None = Field(alias="searchPluseState", default=None)
-    united_params: list[dict] | None = Field(alias="unitedParams", default=None)
+    campaign_id: int = Field(alias="id")
+    bid_type: str = Field(alias="bid_type")
+    nm_settings: list[AdvertNMsSettings] = Field(
+        alias="nm_settings", default_factory=list
+    )
+    settings: AdvertSettings = Field(alias="settings")
+    status: CampaignStatus = Field(alias="status")
+    timestamps: AdvertTimestamps = Field(alias="timestamps")
 
 
-class CampaignStats(WBBaseModel):
+class BoosterStats:
+    avg_position: int = Field(alias="avg_position")
+    date_of_data: date = Field(alias="date")
+    nm_id: int = Field(alias="nm")
+
+
+class AdvertBaseStats(WBBaseModel):
+    atbs: int = 0  # Добавления в корзину
+    views: int = Field(alias="views")
+    cancels: int = Field(alias="canceled")
+    clicks: int = Field(alias="clicks")
+    cpc: float = Field(alias="cpc")
+    cr: float = Field(alias="cr")
+    ctr: float = Field(alias="ctr")
+    orders: int = Field(alias="orders")
+    shks: int = Field(alias="shks")
+    total_spend: float = Field(alias="sum")  # total spend
+    orders_value: float = Field(alias="sum_price")
+
+
+class CampaignDailyStats(AdvertBaseStats):
+    apps: dict = Field(alias="apps", default_factory=dict)
+    date_of_data: date = Field(alias="date")
+
+
+class CampaignStats(AdvertBaseStats):
     """Campaign statistics."""
 
     campaign_id: int = Field(alias="advertId")
-    name: str | None = None
-    views: int = 0  # Показы
-    clicks: int = 0  # Клики
-    ctr: float = 0.0  # CTR (%)
-    cpc: float = 0.0  # CPC (средняя стоимость клика)
-    sum_: float = Field(alias="sum", default=0.0)  # Расход (руб)
-    atbs: int = 0  # Добавления в корзину
-    orders: int = 0  # Заказы
-    cr: float = 0.0  # CR (конверсия заказов, %)
-    shks: int = 0  # Заказано товаров (шт)
-    sum_price: float = Field(alias="sum_price", default=0.0)  # Заказано на сумму (руб)
 
-    # Date range
-    date_from: date | None = None
-    date_to: date | None = None
+    booster_stats: list[BoosterStats] = Field(
+        alias="booster_stats", default_factory=list
+    )
 
     @property
     def avg_order_value(self) -> float:
         """Average order value."""
-        return self.sum_price / self.orders if self.orders > 0 else 0.0
+        return self.orders_value / self.orders if self.orders > 0 else 0.0
 
     @property
     def roas(self) -> float:
         """Return on ad spend."""
-        return self.sum_price / self.sum_ if self.sum_ > 0 else 0.0
+        return self.orders_value / self.total_spend if self.total_spend > 0 else 0.0
 
     @property
     def cost_per_order(self) -> float:
         """Cost per order (CPO)."""
-        return self.sum_ / self.orders if self.orders > 0 else 0.0
+        return self.total_spend / self.orders if self.orders > 0 else 0.0
 
 
-class DailyStats(WBBaseModel):
-    """Daily campaign statistics."""
-
-    campaign_id: int = Field(alias="advertId")
-    date: date
-    views: int = 0
-    clicks: int = 0
-    ctr: float = 0.0
-    cpc: float = 0.0
-    sum_: float = Field(alias="sum", default=0.0)
-    atbs: int = 0
-    orders: int = 0
-    cr: float = 0.0
-    shks: int = 0
-    sum_price: float = Field(alias="sum_price", default=0.0)
+class KeywordClusterStats(WBBaseModel):
+    cluster: str = Field(alias="cluster")
+    count: int = Field(alias="count")
+    keywords: list[str] = Field(alias="keywords", default_factory=list)
 
 
 class KeywordStats(WBBaseModel):
     """Keyword statistics."""
 
-    keyword: str
-    views: int = 0
-    clicks: int = 0
-    ctr: float = 0.0
-    cpc: float = 0.0
-    sum_: float = Field(alias="sum", default=0.0)
-    atbs: int = 0
-    orders: int = 0
-    cr: float = 0.0
-    shks: int = 0
-    sum_price: float = Field(alias="sum_price", default=0.0)
+    excluded: list[str] = Field(alias="excluded", default_factory=list)
+    clusters: list[KeywordClusterStats] = Field(alias="clusters", default_factory=list)
+
+
+class ClusterStatsDetails(WBBaseModel):
+    cluster: str = Field(alias="norm_query")  # Normalized query cluster
+    views: int = Field(alias="views")
+    clicks: int = Field(alias="clicks")
+    atbs: int = Field(alias="atbs")
+    orders: int = Field(alias="orders")
+    ctr: float = Field(alias="ctr")
+    cpc: float = Field(alias="cpc")
+    cpm: float = Field(alias="cpm")
+    avg_pos: float = Field(alias="avg_pos")
 
 
 class ClusterStats(WBBaseModel):
     """Search cluster statistics."""
 
-    cluster: str  # Normalized query cluster
-    count: int = 0  # Number of queries in cluster
-    views: int = 0
-    clicks: int = 0
-    ctr: float = 0.0
-    cpc: float = 0.0
-    sum_: float = Field(alias="sum", default=0.0)
-    atbs: int = 0
-    orders: int = 0
-    cr: float = 0.0
-    shks: int = 0
-    sum_price: float = Field(alias="sum_price", default=0.0)
+    campaign_id: int = Field(alias="advert_id")
+    nm_id: int = Field(alias="nm_id")
+    stats: list[ClusterStatsDetails] = Field(alias="stats", default_factory=list)
+
+
+class PromoBonus(WBBaseModel):
+    sum: int = Field(alias="sum")
+    percent: int = Field(alias="percent")
+    expiration_date: str = Field(alias="expiration_date")
 
 
 class Balance(WBBaseModel):
@@ -165,6 +209,7 @@ class Balance(WBBaseModel):
     balance: float  # Current balance (rubles)
     net: float  # Available for withdrawal (rubles)
     bonus: float = 0.0  # Bonus balance (rubles)
+    cashbacks: list[PromoBonus] = Field(alias="cashbacks", default_factory=list)
 
     @property
     def total(self) -> float:
@@ -175,9 +220,9 @@ class Balance(WBBaseModel):
 class CampaignBudget(WBBaseModel):
     """Campaign budget information."""
 
-    campaign_id: int = Field(alias="advertId")
-    budget: float  # Current budget (rubles)
-    daily_budget: float | None = Field(alias="dailyBudget", default=None)
+    _cash: int = Field(alias="cash")
+    _netting: int = Field(alias="netting")  # unused - always 0
+    total: int = Field(alias="total")
 
 
 class Expense(WBBaseModel):
@@ -185,19 +230,20 @@ class Expense(WBBaseModel):
 
     campaign_id: int = Field(alias="advertId")
     campaign_name: str = Field(alias="campName")
-    upd_num: int = Field(alias="updNum") # Номер выставленного документа
-    upd_time: str | None = Field(alias="updTime", default=None)
-    advert_type: int = Field(alias="advertType") #Тип кампании
-    payment_type: str = Field(alias="paymentType") #Источник списания
+    upd_num: int = Field(alias="updNum")  # Номер выставленного документа
+    upd_time: datetime | None = Field(alias="updTime", default=None)
+    advert_type: int = Field(alias="advertType")  # Тип кампании
+    payment_type: str = Field(alias="paymentType")  # Источник списания
     advert_status: CampaignStatus = Field(alias="advertStatus")
     upd_sum: float = Field(alias="updSum")  # Expense amount (rubles)
 
 
 class Payment(WBBaseModel):
     """Advertising payment record."""
-    id: int = Field(alias="id") #id платежа
-    date: datetime = Field(alias="date") #дата платежа
+
+    id: int = Field(alias="id")  # id платежа
+    date: datetime = Field(alias="date")  # дата платежа
     sum: float = Field(alias="sum")  # Payment amount (rubles)
     type: str  # Тип источника списания
     status: PaymentStatus = Field(alias="statusId")  # Payment status
-    card_status: str = Field(alias="cardStatus") #Статус операции(при оплате картой
+    card_status: str = Field(alias="cardStatus")  # Статус операции(при оплате картой
