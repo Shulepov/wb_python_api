@@ -97,7 +97,7 @@ class AdvertSettings(WBBaseModel):
 class AdvertTimestamps(WBBaseModel):
     created: datetime = Field(alias="created")
     updated: datetime = Field(alias="updated")
-    started: datetime = Field(alias="started")
+    started: datetime | None = Field(alias="started", default=None)
     deleted: datetime = Field(alias="deleted")
 
 
