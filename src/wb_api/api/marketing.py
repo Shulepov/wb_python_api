@@ -44,14 +44,15 @@ class MarketingAPI(BaseAPI):
         """Get detailed information about campaigns.
 
         Args:
-            campaign_ids: List of campaign IDs to get info for.
+            campaign_ids: List of campaign IDs to get info for. Max 50
 
         Returns:
             List of CampaignInfo objects.
 
         Rate limit: 60 requests/minute
         """
-        data = self._post("/api/advert/v2/adverts", json=campaign_ids)
+        params = {"ids": campaign_ids}
+        data = self._get("/api/advert/v2/adverts", params=params)
         adverts = data["adverts"]
         return [CampaignInfo(**item) for item in adverts]
 
