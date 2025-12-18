@@ -44,7 +44,7 @@ class PaymentType(str, Enum):
 
 class AdvertShortInfo(WBBaseModel):
     id: int = Field(alias="advertId")
-    change_time = Field(alias="changeTime")
+    change_time: datetime = Field(alias="changeTime")
 
 
 class CampaignsGroupByTypeAndStatus(WBBaseModel):
