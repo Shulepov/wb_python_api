@@ -2,16 +2,16 @@
 
 from datetime import date, datetime
 import time
-from typing import List, Dict, Optional
 from ..constants import DOMAINS, SANDBOX_DOMAINS
 from ..models.reports import (
     MeasurementTab,
     ParentSubject,
     ReportTaskResponse,
-    ReportTaskStatus
+    ReportTaskStatus,
 )
 
 from .base import BaseAPI
+
 
 class ReportsAPI(BaseAPI):
     """API for reports and analytics."""
@@ -28,7 +28,7 @@ class ReportsAPI(BaseAPI):
 
     def get_excise_report(
         self, date_from: date | datetime, date_to: date | datetime
-    ) -> list[Dict]:
+    ) -> list[dict]:
         """Get excise (marking) report.
 
         Args:
@@ -51,18 +51,18 @@ class ReportsAPI(BaseAPI):
         }
 
         data = self._post("/api/v1/analytics/excise-report", json=payload)
-        return data.get('data', [])
+        return data.get("data", [])
 
     # === Deduction Reports ===
 
     def get_warehouse_measurements(
         self,
-        date_from: Optional[date | datetime],
+        date_from: date | datetime | None,
         date_to: date | datetime,
         tab: MeasurementTab,
         limit: int = 1000,
-        offset: int = 0
-    ) -> list[Dict]:
+        offset: int = 0,
+    ) -> list[dict]:
         """Get warehouse measurements (size penalties) report.
 
         Args:
@@ -76,9 +76,14 @@ class ReportsAPI(BaseAPI):
 
         Rate limit: 5 requests/minute
         """
-        from datetime import datetime, date, time, timezone#, timedelta
-        #gmt3 = timezone(timedelta(hours=3))
-        if date_from and isinstance(date_from, date) and not isinstance(date_from, datetime):
+        from datetime import datetime, date, time, timezone  # , timedelta
+
+        # gmt3 = timezone(timedelta(hours=3))
+        if (
+            date_from
+            and isinstance(date_from, date)
+            and not isinstance(date_from, datetime)
+        ):
             date_from = datetime.combine(date_from, time(0, 0, 0), tzinfo=timezone.utc)
         if isinstance(date_to, date) and not isinstance(date_to, datetime):
             date_to = datetime.combine(date_to, time(23, 59, 59), tzinfo=timezone.utc)
@@ -87,19 +92,19 @@ class ReportsAPI(BaseAPI):
             "dateTo": date_to.isoformat(),
             "tab": tab.value,
             "limit": limit,
-            "offset": offset
+            "offset": offset,
         }
 
         if date_from:
             params["dateFrom"] = date_from.isoformat()
 
         data = self._get("/api/v1/analytics/warehouse-measurements", params=params)
-        return data.get('data', {}).get('reports', [])
+        return data.get("data", {}).get("reports", [])
 
     def get_antifraud_details(
         self,
-        date: Optional[date | datetime],
-    ) -> list[Dict]:
+        date: date | datetime | None,
+    ) -> list[dict]:
         """Get antifraud (self-redemption) details report.
         Data is available from August 2023
 
@@ -121,13 +126,13 @@ class ReportsAPI(BaseAPI):
             params["date"] = date_from.isoformat()
 
         data = self._get("/api/v1/analytics/antifraud-details", params=params)
-        return data.get('details', [])
+        return data.get("details", [])
 
     def get_incorrect_attachments(
         self,
         date_from: date | datetime,
         date_to: date | datetime,
-    ) -> list[Dict]:
+    ) -> list[dict]:
         """Get incorrect attachments (product substitution) report.
 
         Args:
@@ -150,13 +155,13 @@ class ReportsAPI(BaseAPI):
         }
 
         data = self._get("/api/v1/analytics/incorrect-attachments", params=params)
-        return data.get('report', [])
+        return data.get("report", [])
 
     def get_goods_labeling(
         self,
         date_from: date | datetime,
         date_to: date | datetime,
-    ) -> list[Dict]:
+    ) -> list[dict]:
         """Get goods labeling penalties report.
         Data available from March 2024
         Args:
@@ -179,13 +184,13 @@ class ReportsAPI(BaseAPI):
         }
 
         data = self._get("/api/v1/analytics/goods-labeling", params=params)
-        return data.get('report', [])
+        return data.get("report", [])
 
     def get_characteristics_change(
         self,
         date_from: date | datetime,
         date_to: date | datetime,
-    ) -> list[Dict]:
+    ) -> list[dict]:
         """Get characteristics change penalties report.
         Data available from 28 Dec 2021
         Args:
@@ -208,7 +213,7 @@ class ReportsAPI(BaseAPI):
         }
 
         data = self._get("/api/v1/analytics/characteristics-change", params=params)
-        return data.get('report', [])
+        return data.get("report", [])
 
     # === Region Sales ===
 
@@ -216,7 +221,7 @@ class ReportsAPI(BaseAPI):
         self,
         date_from: date | datetime,
         date_to: date | datetime,
-    ) -> list[Dict]:
+    ) -> list[dict]:
         """Get region sales report.
 
         Args:
@@ -239,7 +244,7 @@ class ReportsAPI(BaseAPI):
         }
 
         data = self._get("/api/v1/analytics/region-sale", params=params)
-        return data.get('report', [])
+        return data.get("report", [])
 
     # === Brand Share ===
 
@@ -254,8 +259,9 @@ class ReportsAPI(BaseAPI):
         data = self._get("/api/v1/analytics/brand-share/brands")
         return data
 
-    def get_parent_subjects(self, brand: str, 
-            date_from: date, date_to: date) -> list[ParentSubject]:
+    def get_parent_subjects(
+        self, brand: str, date_from: date, date_to: date
+    ) -> list[ParentSubject]:
         """Get parent subjects (categories) for brand.
 
         Args:
@@ -269,12 +275,12 @@ class ReportsAPI(BaseAPI):
         Rate limit: 1 request/minute (burst 10)
         """
         params = {
-            "brand": brand, 
+            "brand": brand,
             "dateFrom": date_from.isoformat(),
-            "dateTo": date_to.isoformat()
+            "dateTo": date_to.isoformat(),
         }
         data = self._get("/api/v1/analytics/brand-share/parent-subjects", params=params)
-        data = data.get('data', [])
+        data = data.get("data", [])
         return [ParentSubject(**item) for item in data]
 
     def get_brand_share(
@@ -283,7 +289,7 @@ class ReportsAPI(BaseAPI):
         brand: str,
         date_from: date | datetime,
         date_to: date | datetime,
-    ) -> list[Dict]:
+    ) -> list[dict]:
         """Get brand share report.
 
         Args:
@@ -310,7 +316,7 @@ class ReportsAPI(BaseAPI):
         }
 
         data = self._get("/api/v1/analytics/brand-share", params=params)
-        return data.get('report', [])
+        return data.get("report", [])
 
     # === Generated Reports (with tasks) ===
 
@@ -339,7 +345,7 @@ class ReportsAPI(BaseAPI):
         data = self._get(f"/api/v1/warehouse_remains/tasks/{task_id}/status")
         return ReportTaskStatus(**data)
 
-    def download_warehouse_remains(self, task_id: str) -> List[Dict]:
+    def download_warehouse_remains(self, task_id: str) -> list[dict]:
         """Download warehouse remains report.
 
         Args:
@@ -350,12 +356,12 @@ class ReportsAPI(BaseAPI):
 
         Rate limit: 1 request/minute
         """
-        data = self._get(
-            f"/api/v1/warehouse_remains/tasks/{task_id}/download"
-        )
+        data = self._get(f"/api/v1/warehouse_remains/tasks/{task_id}/download")
         return data
 
-    def create_acceptance_report(self, date_from: date | datetime, date_to: date | datetime) -> ReportTaskResponse:
+    def create_acceptance_report(
+        self, date_from: date | datetime, date_to: date | datetime
+    ) -> ReportTaskResponse:
         """Create acceptance report task.
 
         Returns:
@@ -368,10 +374,10 @@ class ReportsAPI(BaseAPI):
         if isinstance(date_to, datetime):
             date_to = date_to.date()
 
-        data = self._get("/api/v1/acceptance_report", params={
-            "dateFrom": date_from.isoformat(),
-            "dateTo": date_to.isoformat()
-        })
+        data = self._get(
+            "/api/v1/acceptance_report",
+            params={"dateFrom": date_from.isoformat(), "dateTo": date_to.isoformat()},
+        )
         return ReportTaskResponse(**data)
 
     def check_acceptance_status(self, task_id: str) -> ReportTaskStatus:
@@ -388,7 +394,7 @@ class ReportsAPI(BaseAPI):
         data = self._get(f"/api/v1/acceptance_report/tasks/{task_id}/status")
         return ReportTaskStatus(**data)
 
-    def download_acceptance_report(self, task_id: str) -> List[Dict]:
+    def download_acceptance_report(self, task_id: str) -> list[dict]:
         """Download acceptance report.
 
         Args:
@@ -399,12 +405,12 @@ class ReportsAPI(BaseAPI):
 
         Rate limit: 1 request/minute
         """
-        data = self._get(
-            f"/api/v1/acceptance_report/tasks/{task_id}/download"
-        )
+        data = self._get(f"/api/v1/acceptance_report/tasks/{task_id}/download")
         return data
 
-    def create_paid_storage(self, date_from: date | datetime, date_to: date | datetime) -> ReportTaskResponse:
+    def create_paid_storage(
+        self, date_from: date | datetime, date_to: date | datetime
+    ) -> ReportTaskResponse:
         """Create paid storage report task.
 
         Returns:
@@ -417,10 +423,10 @@ class ReportsAPI(BaseAPI):
         if isinstance(date_to, datetime):
             date_to = date_to.date()
 
-        data = self._get("/api/v1/paid_storage", params={
-            "dateFrom": date_from.isoformat(),
-            "dateTo": date_to.isoformat()
-        })
+        data = self._get(
+            "/api/v1/paid_storage",
+            params={"dateFrom": date_from.isoformat(), "dateTo": date_to.isoformat()},
+        )
         return ReportTaskResponse(**data)
 
     def check_paid_storage_status(self, task_id: str) -> ReportTaskStatus:
@@ -437,7 +443,7 @@ class ReportsAPI(BaseAPI):
         data = self._get(f"/api/v1/paid_storage/tasks/{task_id}/status")
         return ReportTaskStatus(**data)
 
-    def download_paid_storage(self, task_id: str) -> List[Dict]:
+    def download_paid_storage(self, task_id: str) -> list[dict]:
         """Download paid storage report.
 
         Args:
@@ -448,26 +454,26 @@ class ReportsAPI(BaseAPI):
 
         Rate limit: 1 request/minute
         """
-        data = self._get(
-            f"/api/v1/paid_storage/tasks/{task_id}/download"
-        )
+        data = self._get(f"/api/v1/paid_storage/tasks/{task_id}/download")
         return data
 
     # === Helper methods for generated reports ===
-    
-    def _wait_for_task(self, task_id: str, check_fn, timeout: int, interval: int) -> str:
+
+    def _wait_for_task(
+        self, task_id: str, check_fn, timeout: int, interval: int
+    ) -> str:
         """
         Ждать завершения задачи с периодической проверкой статуса
-        
+
         Args:
             task_id: ID задачи для ожидания
             check_fn: Функция проверки статуса (self, task_id) -> ReportTaskStatus
             timeout: Максимальное время ожидания в секундах
             interval: Интервал между проверками в секундах
-            
+
         Returns:
             ReportTaskStatus: Финальный статус задачи
-            
+
         Raises:
             TimeoutError: Если задача не завершилась за timeout секунд
         """
@@ -480,7 +486,7 @@ class ReportsAPI(BaseAPI):
             # Если задача завершена - вернуть статус
             if status.is_completed:
                 elapsed = time.time() - start_time
-                #logger.info(f"Task {task_id} completed in {elapsed:.1f}s")
+                # logger.info(f"Task {task_id} completed in {elapsed:.1f}s")
                 return status
 
             # Проверить timeout
