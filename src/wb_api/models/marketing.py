@@ -114,7 +114,7 @@ class CampaignInfo(WBBaseModel):
     timestamps: AdvertTimestamps = Field(alias="timestamps")
 
 
-class BoosterStats:
+class BoosterStats(WBBaseModel):
     avg_position: int = Field(alias="avg_position")
     date_of_data: date = Field(alias="date")
     nm_id: int = Field(alias="nm")
