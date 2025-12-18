@@ -51,7 +51,7 @@ class MarketingAPI(BaseAPI):
 
         Rate limit: 60 requests/minute
         """
-        params = {"ids": campaign_ids}
+        params = {"ids": ",".join(campaign_ids)}
         data = self._get("/api/advert/v2/adverts", params=params)
         adverts = data["adverts"]
         return [CampaignInfo(**item) for item in adverts]
