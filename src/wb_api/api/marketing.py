@@ -215,7 +215,7 @@ class MarketingAPI(BaseAPI):
             data = self._get("/adv/v1/upd", params=params)
             if data:
                 expenses = [Expense(**item) for item in data]
-            all_expenses.extend(expenses)
+                all_expenses.extend(expenses)
 
             # Move to next chunk (start day after chunk_end)
             current_date = chunk_end + timedelta(days=1)
@@ -265,7 +265,7 @@ class MarketingAPI(BaseAPI):
             data = self._get("/adv/v1/payments", params=params)
             if data:
                 payments = [Payment(**item) for item in data]
-            all_payments.extend(payments)
+                all_payments.extend(payments)
 
             # Move to next chunk (start day after chunk_end)
             current_date = chunk_end + timedelta(days=1)
