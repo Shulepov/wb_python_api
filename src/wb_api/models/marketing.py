@@ -244,6 +244,6 @@ class Payment(WBBaseModel):
     id: int = Field(alias="id")  # id платежа
     date: datetime = Field(alias="date")  # дата платежа
     sum: float = Field(alias="sum")  # Payment amount (rubles)
-    type: str  # Тип источника списания
+    type: int = Field(alias="type")  # Тип источника списания
     status: PaymentStatus = Field(alias="statusId")  # Payment status
     card_status: str = Field(alias="cardStatus")  # Статус операции(при оплате картой
