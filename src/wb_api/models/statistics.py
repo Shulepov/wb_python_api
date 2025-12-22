@@ -11,6 +11,13 @@ from .base import WBBaseModel
 # === Basic Reports ===
 
 
+class WarehouseType(str, Enum):
+    """Report period type."""
+
+    FBO = "Склад WB"
+    FBS = "Склад продавца"
+
+
 class Income(WBBaseModel):
     """Income (supply) report item."""
 
@@ -33,22 +40,23 @@ class Stock(WBBaseModel):
     """Stock (warehouse remains) report item."""
 
     last_change_date: datetime = Field(alias="lastChangeDate")
+    warehouse_name: str = Field(alias="warehouseName")
     supplier_article: str = Field(alias="supplierArticle")
-    tech_size: str = Field(alias="techSize")
+    nm_id: int = Field(alias="nmId")
     barcode: str
     quantity: int  # Available quantity
-    is_supply: bool = Field(alias="isSupply")
-    is_realization: bool = Field(alias="isRealization")
+    in_way_to_client: int = Field(alias="inWayToClient")
+    in_way_from_client: int = Field(alias="inWayFromClient")
     quantity_full: int = Field(alias="quantityFull")  # Total quantity
-    warehouse_name: str = Field(alias="warehouseName")
-    nm_id: int = Field(alias="nmId")
-    subject: str
     category: str
-    days_on_site: int = Field(alias="daysOnSite")
+    subject: str
     brand: str
-    sc_code: str = Field(alias="SCCode")
+    tech_size: str = Field(alias="techSize")
     price: float
     discount: float
+    is_supply: bool = Field(alias="isSupply")
+    is_realization: bool = Field(alias="isRealization")
+    sc_code: str = Field(alias="SCCode")
 
 
 class Order(WBBaseModel):
@@ -56,21 +64,31 @@ class Order(WBBaseModel):
 
     date: datetime
     last_change_date: datetime = Field(alias="lastChangeDate")
+    warehouse_name: str = Field(alias="warehouseName")
+    warehouse_type: WarehouseType = Field(alias="warehouseType")
+    country_name: str = Field(alias="countryName")
+    oblast_okrug_name: str = Field(alias="oblastOkrugName")
+    region_name: str = Field(alias="regionName")
     supplier_article: str = Field(alias="supplierArticle")
-    tech_size: str = Field(alias="techSize")
+    nm_id: int = Field(alias="nmId")
     barcode: str
+    category: str
+    subject: str
+    brand: str
+    tech_size: str = Field(alias="techSize")
+    income_id: int = Field(alias="incomeID")
+    is_supply: bool = Field(alias="isSupply")
+    is_realization: bool = Field(alias="isRealization")
     total_price: float = Field(alias="totalPrice")
     discount_percent: int = Field(alias="discountPercent")
-    warehouse_name: str = Field(alias="warehouseName")
-    oblast: str  # Region
-    income_id: int = Field(alias="incomeID")
-    odid: int  # Order ID
-    nm_id: int = Field(alias="nmId")
-    subject: str
-    category: str
-    brand: str
+    spp: float = Field(alias="spp")
+    finished_price: float = Field(alias="finishedPrice")
+    price_with_desc: float = Field(alias="priceWithDisc")
     is_cancel: bool = Field(alias="isCancel")
-    cancel_dt: datetime | None = Field(alias="cancel_dt", default=None)
+    cancel_date: datetime = Field(alias="cancelDate")
+    sticker: str
+    g_number: str = Field(alias="gNumber")
+    srid: str = Field(alias="srid")
 
 
 class Sale(WBBaseModel):
@@ -78,32 +96,33 @@ class Sale(WBBaseModel):
 
     date: datetime
     last_change_date: datetime = Field(alias="lastChangeDate")
-    supplier_article: str = Field(alias="supplierArticle")
-    tech_size: str = Field(alias="techSize")
-    barcode: str
-    total_price: float = Field(alias="totalPrice")
-    discount_percent: int = Field(alias="discountPercent")
-    is_supply: bool = Field(alias="isSupply")
-    is_realization: bool = Field(alias="isRealization")
-    promo_code_discount: float = Field(alias="promoCodeDiscount")
     warehouse_name: str = Field(alias="warehouseName")
+    warehouse_type: WarehouseType = Field(alias="warehouseType")
     country_name: str = Field(alias="countryName")
     oblast_okrug_name: str = Field(alias="oblastOkrugName")
     region_name: str = Field(alias="regionName")
-    income_id: int = Field(alias="incomeID")
-    sale_id: str = Field(alias="saleID")
-    odid: int
-    spp: float  # Discount
-    for_pay: float = Field(alias="forPay")  # To pay to seller
-    finished_price: float = Field(alias="finishedPrice")
-    price_with_disc: float = Field(alias="priceWithDisc")
+    supplier_article: str = Field(alias="supplierArticle")
     nm_id: int = Field(alias="nmId")
-    subject: str
+    barcode: str
     category: str
+    subject: str
     brand: str
-    is_storno: int = Field(alias="IsStorno")  # Is return
+    tech_size: str = Field(alias="techSize")
+    income_id: int = Field(alias="incomeID")
+    is_supply: bool = Field(alias="isSupply")
+    is_realization: bool = Field(alias="isRealization")
+    total_price: float = Field(alias="totalPrice")
+    discount_percent: int = Field(alias="discountPercent")
+    spp: float = Field(alias="spp")
+    payment_sale_amount: int = Field(alias="paymentSaleAmount")
+    for_pay: float = Field(alias="forPay")
+    finished_price: float = Field(alias="finishedPrice")
+    price_with_desc: float = Field(alias="priceWithDisc")
+    sale_id: str = Field(alias="saleID")
+    sticker: str
     g_number: str = Field(alias="gNumber")
-    sticker: str | None = None
+    srid: str = Field(alias="srid")
+
 
 class ReportPeriod(str, Enum):
     """Report period type."""
@@ -121,7 +140,9 @@ class SalesReportItem(WBBaseModel):
     date_from: datetime = Field(alias="date_from")
     date_to: datetime = Field(alias="date_to")
     create_dt: datetime = Field(alias="create_dt")
-    suppliercontract_code: str | None = Field(alias="suppliercontract_code", default=None)
+    suppliercontract_code: str | None = Field(
+        alias="suppliercontract_code", default=None
+    )
 
     # Pagination
     rrd_id: int = Field(alias="rrd_id")  # Row ID for pagination
@@ -159,9 +180,11 @@ class SalesReportItem(WBBaseModel):
     gi_box_type_name: str = Field(alias="gi_box_type_name")
 
     # Discounts and promotions
-    product_discount_for_report: float = Field(alias="product_discount_for_report", default=0.0)
+    product_discount_for_report: float = Field(
+        alias="product_discount_for_report", default=0.0
+    )
     supplier_promo: float = Field(alias="supplier_promo", default=0.0)
-    #rid: int
+    # rid: int
 
     # WB calculations
     ppvz_spp_prc: float = Field(alias="ppvz_spp_prc", default=0.0)
@@ -225,5 +248,3 @@ class SalesReportItem(WBBaseModel):
     def net_profit(self) -> float:
         """Net profit (to seller - fees - penalties)."""
         return self.ppvz_for_pay - self.penalty + self.additional_payment
-
-

@@ -5,7 +5,14 @@ from datetime import datetime, date, timedelta
 from typing import Any
 
 from ..constants import DOMAINS, SANDBOX_DOMAINS
-from ..models.statistics import ReportPeriod, SalesReportItem, Income, Order, Stock, Sale
+from ..models.statistics import (
+    ReportPeriod,
+    SalesReportItem,
+    Income,
+    Order,
+    Stock,
+    Sale,
+)
 from .base import BaseAPI
 
 
@@ -18,7 +25,6 @@ class StatisticsAPI(BaseAPI):
         if self._sandbox:
             return SANDBOX_DOMAINS.get("statistics", DOMAINS["statistics"])
         return DOMAINS["statistics"]
-
 
     # === Basic Reports ===
 
@@ -213,9 +219,9 @@ class StatisticsAPI(BaseAPI):
     def get_last_completed_week_dates() -> tuple[date, date]:
         """
         Возвращает даты прошлой завершенной недели (пн-вс)
-        
+
         WB генерирует отчет за неделю в понедельник следующей недели.
-        Поэтому "прошлая завершенная неделя" - это неделя, которая 
+        Поэтому "прошлая завершенная неделя" - это неделя, которая
         закончилась в прошлое воскресенье.
         """
         today = datetime.now().date()
@@ -227,5 +233,3 @@ class StatisticsAPI(BaseAPI):
         date_to = date_from + timedelta(days=6)
 
         return date_from, date_to
-
-
