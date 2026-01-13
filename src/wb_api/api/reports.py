@@ -103,7 +103,7 @@ class ReportsAPI(BaseAPI):
 
     def get_antifraud_details(
         self,
-        date: date | datetime | None,
+        date_from: date | datetime | None,
     ) -> list[dict]:
         """Get antifraud (self-redemption) details report.
         Data is available from August 2023
@@ -116,13 +116,11 @@ class ReportsAPI(BaseAPI):
 
         Rate limit: 1 requests per 10 minutes
         """
-        if isinstance(date_from, datetime):
+        if date_from and isinstance(date_from, datetime):
             date_from = date_from.date()
-        if isinstance(date_to, datetime):
-            date_to = date_to.date()
 
         params = {}
-        if date:
+        if date_from:
             params["date"] = date_from.isoformat()
 
         data = self._get("/api/v1/analytics/antifraud-details", params=params)
