@@ -126,7 +126,7 @@ class ReportsAPI(BaseAPI):
         data = self._get("/api/v1/analytics/antifraud-details", params=params)
         return data.get("details", [])
 
-    def deductions(
+    def get_deductions(
         self,
         date_from: date | datetime | None,
         date_to: date | datetime,
@@ -184,35 +184,6 @@ class ReportsAPI(BaseAPI):
         }
 
         data = self._get("/api/v1/analytics/goods-labeling", params=params)
-        return data.get("report", [])
-
-    def get_characteristics_change(
-        self,
-        date_from: date | datetime,
-        date_to: date | datetime,
-    ) -> list[dict]:
-        """Get characteristics change penalties report.
-        Data available from 28 Dec 2021
-        Args:
-            date_from: Start date.
-            date_to: End date. Max 31 days range
-
-        Returns:
-            List of CharacteristicsChange objects.
-
-        Rate limit: 10 requests per 10 minutes
-        """
-        if isinstance(date_from, datetime):
-            date_from = date_from.date()
-        if isinstance(date_to, datetime):
-            date_to = date_to.date()
-
-        params = {
-            "dateFrom": date_from.isoformat(),
-            "dateTo": date_to.isoformat(),
-        }
-
-        data = self._get("/api/v1/analytics/characteristics-change", params=params)
         return data.get("report", [])
 
     # === Region Sales ===
