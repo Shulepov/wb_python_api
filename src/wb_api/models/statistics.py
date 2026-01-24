@@ -1,6 +1,6 @@
 """Models for Statistics API (sales reports)."""
 
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 
 from pydantic import Field
@@ -137,9 +137,9 @@ class SalesReportItem(WBBaseModel):
     # Report identification
     realizationreport_id: int = Field(alias="realizationreport_id")
     srid: str = Field(alias="srid")
-    date_from: datetime = Field(alias="date_from")
-    date_to: datetime = Field(alias="date_to")
-    create_dt: datetime = Field(alias="create_dt")
+    date_from: date = Field(alias="date_from")
+    date_to: date = Field(alias="date_to")
+    create_dt: date = Field(alias="create_dt")
     suppliercontract_code: str | None = Field(
         alias="suppliercontract_code", default=None
     )
@@ -158,6 +158,9 @@ class SalesReportItem(WBBaseModel):
     doc_type_name: str = Field(alias="doc_type_name")
 
     # Quantity and pricing
+    dlv_prc: float
+    fix_tariff_date_from: date = Field(alias="fix_tariff_date_from")
+    fix_tariff_date_to: date = Field(alias="fix_tariff_date_to")
     quantity: int
     retail_price: float = Field(alias="retail_price")  # Retail price
     retail_amount: float = Field(alias="retail_amount")  # Total sales amount
