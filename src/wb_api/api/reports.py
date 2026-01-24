@@ -149,10 +149,15 @@ class ReportsAPI(BaseAPI):
         if isinstance(date_to, date):
             date_to = datetime.combine(date_to.today(), datetime.min.time())
 
-        params = {"dateTo": date_to.isoformat(), "limit": limit, "offset": offset}
+        dt_format = "%Y-%m-%dT%H:%M:%SZ"
+        params = {
+            "dateTo": date_to.strftime(dt_format),
+            "limit": limit,
+            "offset": offset,
+        }
 
         if date_from:
-            params["dateFrom"] = (date_from.isoformat(),)
+            params["dateFrom"] = date_from.strftime(dt_format)
 
         data = self._get("/api/analytics/v1/deductions", params=params)
         return data.get("report", [])
