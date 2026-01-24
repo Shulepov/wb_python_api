@@ -144,10 +144,10 @@ class ReportsAPI(BaseAPI):
 
         Rate limit: 1 request/minute (burst 10)
         """
-        if isinstance(date_from, datetime):
-            date_from = date_from.date()
-        if isinstance(date_to, datetime):
-            date_to = date_to.date()
+        if isinstance(date_from, date):
+            date_from = datetime.combine(date_from.today(), datetime.min.time())
+        if isinstance(date_to, date):
+            date_to = datetime.combine(date_to.today(), datetime.min.time())
 
         params = {"dateTo": date_to.isoformat(), "limit": limit, "offset": offset}
 
