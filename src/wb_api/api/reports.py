@@ -98,7 +98,7 @@ class ReportsAPI(BaseAPI):
         if date_from:
             params["dateFrom"] = date_from.isoformat()
 
-        data = self._get("/api/v1/analytics/warehouse-measurements", params=params)
+        data = self._get("/api/analytics/v1/measurement-penalties", params=params)
         return data.get("data", {}).get("reports", [])
 
     def get_antifraud_details(
