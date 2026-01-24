@@ -126,10 +126,12 @@ class ReportsAPI(BaseAPI):
         data = self._get("/api/v1/analytics/antifraud-details", params=params)
         return data.get("details", [])
 
-    def get_incorrect_attachments(
+    def deductions(
         self,
-        date_from: date | datetime,
+        date_from: date | datetime | None,
         date_to: date | datetime,
+        limit: int = 1000,
+        offset: int = 0,
     ) -> list[dict]:
         """Get incorrect attachments (product substitution) report.
 
@@ -147,12 +149,12 @@ class ReportsAPI(BaseAPI):
         if isinstance(date_to, datetime):
             date_to = date_to.date()
 
-        params = {
-            "dateFrom": date_from.isoformat(),
-            "dateTo": date_to.isoformat(),
-        }
+        params = {"dateTo": date_to.isoformat(), "limit": limit, "offset": offset}
 
-        data = self._get("/api/v1/analytics/incorrect-attachments", params=params)
+        if date_from:
+            params["dateFrom"] = (date_from.isoformat(),)
+
+        data = self._get("/api/analytics/v1/deductions", params=params)
         return data.get("report", [])
 
     def get_goods_labeling(
