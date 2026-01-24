@@ -137,7 +137,7 @@ def empty_str_to_none(v):
     return v
 
 
-OptionalDate = Annotated[date | None, BeforeValidator(empty_str_to_none)]
+OptionalDateTime = Annotated[datetime | None, BeforeValidator(empty_str_to_none)]
 
 
 class SalesReportItem(WBBaseModel):
@@ -168,10 +168,10 @@ class SalesReportItem(WBBaseModel):
 
     # Warehouse
     dlv_prc: float
-    fix_tariff_date_from: OptionalDate | None = Field(
+    fix_tariff_date_from: OptionalDateTime | None = Field(
         alias="fix_tariff_date_from", default=None
     )
-    fix_tariff_date_to: OptionalDate | None = Field(
+    fix_tariff_date_to: OptionalDateTime | None = Field(
         alias="fix_tariff_date_to", default=None
     )
 
