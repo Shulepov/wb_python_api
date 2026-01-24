@@ -2,8 +2,8 @@
 
 from datetime import datetime, date
 from enum import Enum
-
-from pydantic import Field
+from typing import Annotated
+from pydantic import Field, BeforeValidator
 
 from .base import WBBaseModel
 
@@ -131,6 +131,15 @@ class ReportPeriod(str, Enum):
     WEEKLY = "weekly"
 
 
+def empty_str_to_none(v):
+    if v == "":
+        return None
+    return v
+
+
+OptionalDate = Annotated[date | None, BeforeValidator(empty_str_to_none)]
+
+
 class SalesReportItem(WBBaseModel):
     """Detailed sales report item (realization report)."""
 
@@ -159,10 +168,12 @@ class SalesReportItem(WBBaseModel):
 
     # Warehouse
     dlv_prc: float
-    fix_tariff_date_from: date | None = Field(
+    fix_tariff_date_from: OptionalDate | None = Field(
         alias="fix_tariff_date_from", default=None
     )
-    fix_tariff_date_to: date | None = Field(alias="fix_tariff_date_to", default=None)
+    fix_tariff_date_to: OptionalDate | None = Field(
+        alias="fix_tariff_date_to", default=None
+    )
 
     # Quantity and pricing
     quantity: int
