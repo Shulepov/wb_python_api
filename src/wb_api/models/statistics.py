@@ -157,10 +157,14 @@ class SalesReportItem(WBBaseModel):
     barcode: str = Field(alias="barcode")
     doc_type_name: str = Field(alias="doc_type_name")
 
-    # Quantity and pricing
+    # Warehouse
     dlv_prc: float
-    fix_tariff_date_from: date = Field(alias="fix_tariff_date_from")
-    fix_tariff_date_to: date = Field(alias="fix_tariff_date_to")
+    fix_tariff_date_from: date | None = Field(
+        alias="fix_tariff_date_from", default=None
+    )
+    fix_tariff_date_to: date | None = Field(alias="fix_tariff_date_to", default=None)
+
+    # Quantity and pricing
     quantity: int
     retail_price: float = Field(alias="retail_price")  # Retail price
     retail_amount: float = Field(alias="retail_amount")  # Total sales amount
