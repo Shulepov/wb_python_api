@@ -155,7 +155,7 @@ class SalesReportItem(WBBaseModel):
 
     # Pagination
     rrd_id: int = Field(alias="rrd_id")  # Row ID for pagination
-    gi_id: int = Field(alias="gi_id")
+    gi_id: int = Field(alias="gi_id")  # Supply number
 
     # Product information
     subject_name: str = Field(alias="subject_name")
@@ -196,13 +196,13 @@ class SalesReportItem(WBBaseModel):
     return_amount: int = Field(alias="return_amount", default=0)
     delivery_rub: float = Field(alias="delivery_rub", default=0.0)
     gi_box_type_name: str = Field(alias="gi_box_type_name")
+    srv_dbs: bool = Field(alias="gi_box_type_name", default=False)
 
     # Discounts and promotions
     product_discount_for_report: float = Field(
         alias="product_discount_for_report", default=0.0
     )
     supplier_promo: float = Field(alias="supplier_promo", default=0.0)
-    # rid: int
 
     # WB calculations
     ppvz_spp_prc: float = Field(alias="ppvz_spp_prc", default=0.0)
@@ -232,6 +232,31 @@ class SalesReportItem(WBBaseModel):
     sticker_id: str = Field(alias="sticker_id", default="")
     site_country: str = Field(alias="site_country", default="")
 
+    # Cashback and loyalty
+    cashback_amount: float = Field(alias="cashback_amount", default=0)
+    cashback_discount: float = Field(alias="cashback_discount", default=0)
+    cashback_commission_change: float = Field(
+        alias="cashback_commission_change", default=0
+    )
+
+    seller_promo_id: int = Field(alias="seller_promo_id", default=0)
+    seller_promo_discount: float = Field(alias="seller_promo_discount", default=0)
+
+    loyalty_id: int = Field(alias="loyalty_id", default=0)
+    loyalty_discount: float = Field(alias="loyalty_discount", default=0)
+
+    uuid_promocode: str = Field(alias="uuid_promocode", default="")
+    sale_price_promocode_discount_prc: float = Field(
+        alias="sale_price_promocode_discount_prc", default=0
+    )
+
+    installment_cofinancing_amount: float = Field(
+        alias="installment_cofinancing_amount", default=0
+    )
+    wibes_wb_discount_percent: float = Field(
+        alias="wibes_wb_discount_percent", default=0
+    )
+
     # Penalties and adjustments
     penalty: float = 0.0
     additional_payment: float = 0.0
@@ -241,6 +266,8 @@ class SalesReportItem(WBBaseModel):
     storage_fee: float = Field(alias="storage_fee", default=0.0)
     deduction: float = 0.0
     acceptance: float = 0.0
+
+    delivery_method: str = Field(alias="delivery_method", default="")
 
     @property
     def total_to_seller(self) -> float:
