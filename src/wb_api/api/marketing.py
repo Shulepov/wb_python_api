@@ -94,8 +94,8 @@ class MarketingAPI(BaseAPI):
 
         params = {
             "id": ",".join([str(cid) for cid in campaign_ids]),
-            "dateFrom": date_from.isoformat(),
-            "dateTo": date_to.isoformat(),
+            "beginDate": date_from.isoformat(),
+            "endDate": date_to.isoformat(),
         }
 
         data = self._get("/adv/v3/fullstats", params=params)
