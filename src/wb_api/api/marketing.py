@@ -13,6 +13,8 @@ from ..models.marketing import (
     Expense,
     KeywordStats,
     Payment,
+    CampaignStatus,
+    PaymentType,
 )
 from .base import BaseAPI
 
@@ -40,7 +42,12 @@ class MarketingAPI(BaseAPI):
         data = self._get("/adv/v1/promotion/count")
         return CampaignListResponse(**data)
 
-    def get_campaigns_info(self, campaign_ids: list[int]) -> list[CampaignInfo]:
+    def get_campaigns_info(
+        self,
+        campaign_ids: list[int],
+        statuses: list[CampaignStatus] | None = None,
+        payment_type: PaymentType | None = None,
+    ) -> list[CampaignInfo]:
         """Get detailed information about campaigns.
 
         Args:
@@ -52,6 +59,10 @@ class MarketingAPI(BaseAPI):
         Rate limit: 60 requests/minute
         """
         params = {"ids": ",".join(map(str, campaign_ids))}
+        if statuses:
+            params["statuses"] = ",".join([status.value for status in statuses])
+        if payment_type:
+            params["payment_type"] = payment_type.value
         data = self._get("/api/advert/v2/adverts", params=params)
         adverts = data["adverts"]
         return [CampaignInfo(**item) for item in adverts]
