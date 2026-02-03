@@ -93,7 +93,7 @@ class MarketingAPI(BaseAPI):
             date_to = date_to.date()
 
         params = {
-            "id": ",".join([str(cid) for cid in campaign_ids]),
+            "ids": ",".join([str(cid) for cid in campaign_ids]),
             "beginDate": date_from.isoformat(),
             "endDate": date_to.isoformat(),
         }
