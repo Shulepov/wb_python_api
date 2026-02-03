@@ -60,7 +60,7 @@ class MarketingAPI(BaseAPI):
         """
         params = {"ids": ",".join(map(str, campaign_ids))}
         if statuses:
-            params["statuses"] = ",".join([status.value for status in statuses])
+            params["statuses"] = ",".join([str(status.value) for status in statuses])
         if payment_type:
             params["payment_type"] = payment_type.value
         data = self._get("/api/advert/v2/adverts", params=params)
