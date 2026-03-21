@@ -156,6 +156,9 @@ class SalesReportItem(WBBaseModel):
     # Pagination
     rrd_id: int = Field(alias="rrd_id")  # Row ID for pagination
     gi_id: int = Field(alias="gi_id")  # Supply number
+    order_uid: str = Field(
+        alias="order_uid", default=""
+    )  # ID транзакции. Заказы в одной корзине покупателя будут иметь одинаковый order_uid
 
     # Product information
     subject_name: str = Field(alias="subject_name")
@@ -218,6 +221,7 @@ class SalesReportItem(WBBaseModel):
     acquiring_fee: float = Field(alias="acquiring_fee", default=0.0)
     acquiring_percent: float = Field(alias="acquiring_percent", default=0.0)
     acquiring_bank: str = Field(alias="acquiring_bank", default="")
+    payment_processing: str = Field(alias="payment_processing", default="")
 
     # Additional WB fields
     ppvz_vw: float = Field(alias="ppvz_vw", default=0.0)
@@ -235,7 +239,7 @@ class SalesReportItem(WBBaseModel):
     # Cashback and loyalty
     cashback_amount: float = Field(alias="cashback_amount", default=0)
     cashback_discount: float = Field(alias="cashback_discount", default=0)
-    cashback_commission_change: float = Field(
+    cashback_commission_change: int = Field(
         alias="cashback_commission_change", default=0
     )
 
@@ -268,6 +272,9 @@ class SalesReportItem(WBBaseModel):
     acceptance: float = 0.0
 
     delivery_method: str = Field(alias="delivery_method", default="")
+
+    # Payments
+    payment_schedule: int = 0
 
     @property
     def total_to_seller(self) -> float:
