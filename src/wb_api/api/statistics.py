@@ -109,7 +109,7 @@ class StatisticsAPI(BaseAPI):
         limit: int = 100000,
         rrd_id: int = 0,
         period: ReportPeriod | str = ReportPeriod.WEEKLY,
-    ) -> list[SalesReportItem]:
+    ) -> list[dict]:
         """
         Get detailed sales report by period.
 
@@ -165,7 +165,7 @@ class StatisticsAPI(BaseAPI):
         data = self._get("/api/v5/supplier/reportDetailByPeriod", params=params)
         if not data:
             return []
-        return [SalesReportItem(**item) for item in data]
+        return data
 
     def iter_sales_report(
         self,
@@ -173,7 +173,7 @@ class StatisticsAPI(BaseAPI):
         date_to: str | datetime,
         batch_size: int = 100000,
         period: ReportPeriod | str = ReportPeriod.WEEKLY,
-    ) -> Iterator[SalesReportItem]:
+    ) -> Iterator[dict]:
         """
         Iterate over full sales report with automatic pagination.
 
