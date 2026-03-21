@@ -196,7 +196,7 @@ class SalesReportItem(WBBaseModel):
     return_amount: int = Field(alias="return_amount", default=0)
     delivery_rub: float = Field(alias="delivery_rub", default=0.0)
     gi_box_type_name: str = Field(alias="gi_box_type_name")
-    srv_dbs: bool = Field(alias="gi_box_type_name", default=False)
+    srv_dbs: bool = Field(alias="srv_dbs", default=False)
 
     # Discounts and promotions
     product_discount_for_report: float = Field(
