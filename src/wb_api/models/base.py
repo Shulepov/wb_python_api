@@ -15,3 +15,7 @@ class WBBaseModel(BaseModel):
         str_strip_whitespace=True,
         validate_assignment=True,
     )
+
+
+def none_to_empty_list(v: Any) -> list:
+    return [] if v is None else v

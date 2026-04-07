@@ -3,9 +3,10 @@
 from datetime import date, datetime
 from enum import Enum
 
-from pydantic import Field
+from typing import Annotated, Any
+from pydantic import BaseModel, Field, BeforeValidator
 
-from .base import WBBaseModel
+from .base import WBBaseModel, none_to_empty_list
 
 
 class CampaignType(int, Enum):
@@ -106,9 +107,9 @@ class CampaignInfo(WBBaseModel):
 
     campaign_id: int = Field(alias="id")
     bid_type: str = Field(alias="bid_type")
-    nm_settings: list[AdvertNMsSettings] = Field(
-        alias="nm_settings", default_factory=list, default=[]
-    )
+    nm_settings: Annotated[
+        list[AdvertNMsSettings], BeforeValidator(none_to_empty_list)
+    ] = Field(alias="nm_settings", default_factory=list)
     settings: AdvertSettings = Field(alias="settings")
     status: CampaignStatus = Field(alias="status")
     timestamps: AdvertTimestamps = Field(alias="timestamps")
