@@ -107,7 +107,7 @@ class CampaignInfo(WBBaseModel):
     campaign_id: int = Field(alias="id")
     bid_type: str = Field(alias="bid_type")
     nm_settings: list[AdvertNMsSettings] = Field(
-        alias="nm_settings", default_factory=list
+        alias="nm_settings", default_factory=list, default=[]
     )
     settings: AdvertSettings = Field(alias="settings")
     status: CampaignStatus = Field(alias="status")

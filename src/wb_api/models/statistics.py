@@ -152,6 +152,7 @@ class SalesReportItem(WBBaseModel):
     suppliercontract_code: str | None = Field(
         alias="suppliercontract_code", default=None
     )
+    report_type: int = Field(alias="report_type", default=1)  # Enum: 1 2 3 4
 
     # Pagination
     rrd_id: int = Field(alias="rrd_id")  # Row ID for pagination
@@ -235,6 +236,10 @@ class SalesReportItem(WBBaseModel):
     bonus_type_name: str = Field(alias="bonus_type_name", default="")
     sticker_id: str = Field(alias="sticker_id", default="")
     site_country: str = Field(alias="site_country", default="")
+    trbx_id: str = Field(alias="trbx_id")  # Номер короба для обработки товара
+    is_legal_entity: bool = Field(
+        alias="is_legal_entity", default=False
+    )  # Признак B2B-продажи
 
     # Cashback and loyalty
     cashback_amount: float = Field(alias="cashback_amount", default=0)
